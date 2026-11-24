@@ -102,6 +102,11 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 - 产物在各项目的 `build/libs/`。设置环境变量 `COMFORT_ITEMS_BUILD_DIR` 可将构建输出写至其他目录，避免缓存和产物占用工作区磁盘。
 - **2026-11-24** 八个重点组合逐个构建。在副屏上的干净客户端连接同版 Mojang 原版专用服务端，每档通过 31 项核心断言和 22 项扩展断言。七个可安装上游的组合各通过 6 项共存断言。实际加载器版本、场景和证据见[实机验收记录](docs/playtest.md)及[共存矩阵](docs/coexistence.md)。
 
+## 制作与协作
+
+- [YuZhezA](https://github.com/YuZhezA) 负责需求设计和项目维护。
+- [OpenAI Codex（GPT）](https://github.com/codex) 参与模组实现、实机测试及文档整理。
+
 ## 参考与许可
 
 [上游行为核对表](docs/references.md)记录对应源码、快捷键与取舍。基于行为和文档独立实现。Item Scroller 的权限文件为 LGPLv3，Forge 移植仓库同样为 LGPLv3。Stack Refill 源仓库标为 All Rights Reserved，仅参考公开行为。Configured 提供 LGPLv3 模组许可，目前只作为可选集成的原始资料。
