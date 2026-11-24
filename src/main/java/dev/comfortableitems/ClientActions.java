@@ -72,7 +72,7 @@ public final class ClientActions {
         Hover hover = hover(client, client.mouseHandler.xpos(), client.mouseHandler.ypos());
         if (drop) return dropKey(actions, hover, event, modifiers);
         if (hover != null && !dropHeld && modifiers == 0 && sort
-            && actions.ordinary(hover.slot)) {
+            && Settings.current.sortEnabled && actions.ordinary(hover.slot)) {
             if (upstreamOwnsSort()) return false;
             if (event == ClientPlatform.PRESS) actions.sort(actions.side(actions.playerSide(hover.slot), false));
             return true;
@@ -144,7 +144,7 @@ public final class ClientActions {
         Hover hover = hover(client, client.mouseHandler.xpos(), client.mouseHandler.ypos());
         if (drop && dropKey(actions, hover, event, modifiers)) return true;
         if (hover == null) return false;
-        if (modifiers == 0 && sort && actions.ordinary(hover.slot)) {
+        if (modifiers == 0 && sort && Settings.current.sortEnabled && actions.ordinary(hover.slot)) {
             if (upstreamOwnsSort()) return false;
             actions.sort(actions.side(actions.playerSide(hover.slot), false));
             return true;

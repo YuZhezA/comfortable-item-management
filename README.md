@@ -39,7 +39,9 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 | `sortKey` | `key.keyboard.r`，原版键名 |
 | `positionAwareScroll` | `true`，普通和 Shift 滚动按区域调整方向 |
 | `reverseSingleScroll` / `reverseStackScroll` | `false`，反转相应滚动方向 |
-| `sortOrder` | `CATEGORY_NAME`，另支持 `NAME`、`ID`、`COUNT` |
+| `sortEnabled` | `true`，启用整理键 |
+| `sortOrder` | `CATEGORY_NAME`，另支持 `CATEGORY_COUNT`、`CATEGORY_RARITY`、`CATEGORY_RAWID`、`ITEM_NAME`、`ITEM_COUNT`、`ITEM_RARITY`、`ITEM_RAWID`。旧值 `NAME`、`ID`、`COUNT` 仍有效 |
+| `sortCategoryOrder` | `[]`，可给 `block`、`food`、`item`、`equipment/pickaxe` 等分类指定先后，未列出的分类随后按名称排列 |
 | `sortShulkersAtEnd` / `sortBundlesAtEnd` | `true`，潜影盒和收纳袋放在末尾 |
 | `sortShulkersInverted` / `sortBundlesInverted` | `false`，将对应末尾分组改到前面 |
 | `sortTopPriority` / `sortBottomPriority` | `[]`，接受按顺序排列的物品 ID |
@@ -70,3 +72,5 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 本次改动处理了上游整理绑定冲突、离线测试身份、NeoForge 启动类路径重复。测试工具使用独立实例与本地原版服务端。
 
 Forge 1.20.1 加入 pack.mcmeta，修复安装 JAR 启动时的资源包元数据警告。测试脚本增加多人服耐久与共存检查。
+
+整理补齐按物品类别、数量、稀有度、内部注册序号的排序组合和分类顺序。容器内使用原版可堆叠规则整理，保留潜影盒和收纳袋中的原数据。

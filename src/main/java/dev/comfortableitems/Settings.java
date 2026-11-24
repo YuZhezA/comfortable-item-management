@@ -18,7 +18,10 @@ import java.util.Map;
 
 public final class Settings {
     public enum Match { OFF, TYPE, ID, STRICT }
-    public enum Order { CATEGORY_NAME, NAME, ID, COUNT }
+    public enum Order {
+        CATEGORY_NAME, CATEGORY_COUNT, CATEGORY_RARITY, CATEGORY_RAWID,
+        ITEM_NAME, ITEM_COUNT, ITEM_RARITY, ITEM_RAWID, NAME, ID, COUNT
+    }
 
     public static final Logger LOG = LoggerFactory.getLogger("comfortable_items");
     public static final KeyMapping SORT = ClientPlatform.sortKey();
@@ -32,7 +35,9 @@ public final class Settings {
     boolean reverseSingleScroll = false;
     boolean reverseStackScroll = false;
     boolean positionAwareScroll = true;
+    boolean sortEnabled = true;
     Order sortOrder = Order.CATEGORY_NAME;
+    ArrayList<String> sortCategoryOrder = new ArrayList<>();
     boolean sortShulkersAtEnd = true;
     boolean sortShulkersInverted = false;
     boolean sortBundlesAtEnd = true;
@@ -76,6 +81,7 @@ public final class Settings {
                 if (loaded.gestures == null) loaded.gestures = defaultGestures();
                 defaultGestures().forEach(loaded.gestures::putIfAbsent);
                 if (loaded.sortOrder == null) loaded.sortOrder = Order.CATEGORY_NAME;
+                if (loaded.sortCategoryOrder == null) loaded.sortCategoryOrder = new ArrayList<>();
                 if (loaded.sortTopPriority == null) loaded.sortTopPriority = new ArrayList<>();
                 if (loaded.sortBottomPriority == null) loaded.sortBottomPriority = new ArrayList<>();
                 SORT.setKey(InputConstants.getKey(loaded.sortKey));

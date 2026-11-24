@@ -151,8 +151,9 @@ def test_coexistence():
              [state(9,'stone',7),state(10,'dirt',7),state(0,'diamond',2)],[state(0,'stone',1)])
     fixture(player('inventory.0','stone',8),player('inventory.1','dirt',7),player('hotbar.0','diamond',2))
     button(BAG, ALT, SHIFT)
-    evidence('Shared Alt+Shift click reaches upstream bulk transfer', [],[state(0,'stone',8),state(1,'dirt',7)],
-             ['minecraft:stone','minecraft:dirt'])
+    evidence('Shared Alt+Shift click reaches upstream and includes the hotbar', [],
+             [state(0,'diamond',2),state(1,'dirt',7),state(2,'stone',8)],
+             ['minecraft:stone','minecraft:dirt','minecraft:diamond'])
     fixture(player('inventory.0','stone',3),player('inventory.1','dirt',7),player('hotbar.0','stone',2),container(0,'stone',2))
     button(BAG, ALT, SHIFT, CTRL, right=True)
     evidence('Exclusive full Ctrl chord matches stone and leaves dirt',

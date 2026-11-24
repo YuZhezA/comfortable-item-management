@@ -164,13 +164,25 @@ final class InventoryActions {
         Settings settings = Settings.current;
         Comparator<ItemStack> priority = Comparator.comparingInt(InventoryActions::sortPriority);
         Comparator<ItemStack> name = Comparator.comparing(stack -> stack.getHoverName().getString(), String.CASE_INSENSITIVE_ORDER);
+        Comparator<ItemStack> rawId = Comparator.comparingInt(stack -> BuiltInRegistries.ITEM.getId(stack.getItem()));
         Comparator<ItemStack> ordering = switch (settings.sortOrder) {
-            case CATEGORY_NAME -> Comparator.comparing(ItemTraits::category).thenComparing(name);
-            case NAME -> name;
+            case CATEGORY_NAME, ITEM_NAME, NAME -> name;
+            case CATEGORY_COUNT, ITEM_COUNT, COUNT -> Comparator.comparingInt(ItemStack::getCount).reversed().thenComparing(name);
+            case CATEGORY_RARITY, ITEM_RARITY -> Comparator.comparing(ItemStack::getRarity).reversed().thenComparing(rawId);
+            case CATEGORY_RAWID, ITEM_RAWID -> rawId;
             case ID -> Comparator.comparing(InventoryActions::id);
-            case COUNT -> Comparator.comparingInt(ItemStack::getCount).reversed().thenComparing(name);
         };
+        if (settings.sortOrder.name().startsWith("CATEGORY_")) {
+            Comparator<ItemStack> categories = Comparator.comparingInt(InventoryActions::categoryPriority)
+                .thenComparing(ItemTraits::category);
+            ordering = categories.thenComparing(ordering);
+        }
         return priority.thenComparing(ordering).thenComparing(InventoryActions::id).compare(a, b);
+    }
+
+    private static int categoryPriority(ItemStack stack) {
+        int index = Settings.current.sortCategoryOrder.indexOf(ItemTraits.category(stack));
+        return index >= 0 ? index : Integer.MAX_VALUE;
     }
 
     private static int sortPriority(ItemStack stack) {
@@ -181,7 +193,7 @@ final class InventoryActions {
         int last = settings.sortBottomPriority.indexOf(id);
         if (last >= 0) return 3 + last;
         if (id.endsWith("shulker_box") && settings.sortShulkersAtEnd) return settings.sortShulkersInverted ? -1 : 1;
-        if (id.equals("minecraft:bundle") && settings.sortBundlesAtEnd) return settings.sortBundlesInverted ? -1 : 2;
+        if ((id.endsWith(":bundle") || id.endsWith("_bundle")) && settings.sortBundlesAtEnd) return settings.sortBundlesInverted ? -1 : 2;
         return 0;
     }
 }
