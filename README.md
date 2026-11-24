@@ -68,3 +68,5 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 开发过程中的安装 JAR 验证使用 `tools/launch-fixture.py` 和 `tools/play-fixture.py`。游戏服务端使用 Mojang 原版 JAR，测试数据和凭据分别保存在隔离实例中。首次并行构建受工作区盘空间影响，设置 COMFORT_ITEMS_BUILD_DIR 可选择其他生成目录。
 
 本次改动处理了上游整理绑定冲突、离线测试身份、NeoForge 启动类路径重复。测试工具使用独立实例与本地原版服务端。
+
+Forge 1.20.1 加入 pack.mcmeta，修复安装 JAR 启动时的资源包元数据警告。测试脚本增加多人服耐久与共存检查。
