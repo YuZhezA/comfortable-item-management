@@ -6,7 +6,7 @@ def buildRoot = providers.environmentVariable('COMFORT_ITEMS_BUILD_DIR')
 if (buildRoot.isPresent()) layout.buildDirectory.set(file("${buildRoot.get()}/${'fabric-1.20.1'}"))
 
 group = 'dev.comfortableitems'
-version = '0.1.1-dev'
+version = '0.1.2'
 base { archivesName = 'comfortable-items-fabric-1.20.1' }
 
 repositories { mavenCentral() }

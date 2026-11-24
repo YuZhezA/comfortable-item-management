@@ -28,6 +28,7 @@ public final class ClientActions {
     private static int dragButton = -1;
     private static AbstractContainerScreen<?> dragScreen;
     private static boolean dragFromHotbar;
+    private static Slot lastStackDragSlot;
     private static final Set<Integer> visited = new HashSet<>();
 
     private record Hover(AbstractContainerScreen<?> screen, Slot slot, double x, double y) {
@@ -216,7 +217,8 @@ public final class ClientActions {
         }
         holdMouse(operation, button, hover.screen);
         dragFromHotbar = actions.hotbar(hover.slot);
-        drag(actions, hover.slot, operation);
+        if (operation.equals("dragStacks")) dragStackOnEntry(actions, hover.slot);
+        else drag(actions, hover.slot, operation);
         return true;
     }
 
@@ -231,6 +233,7 @@ public final class ClientActions {
         dragAction = null;
         dragScreen = null;
         dragButton = -1;
+        lastStackDragSlot = null;
         visited.clear();
     }
 
@@ -245,14 +248,26 @@ public final class ClientActions {
         Hover hover = actions == null ? null : hover(client, x, y);
         if (hover == null || !chord(ClientPlatform.modifiers(client), dropHeld, dragButton == 0 ? "LEFT" : "RIGHT")
             .equalsIgnoreCase(Settings.current.gestures.get(dragAction))) return;
+        if (dragAction.equals("dragStacks")) {
+            dragStackOnEntry(actions, hover.slot);
+            return;
+        }
         if (actions.ordinary(hover.slot)
             && (!actions.hasPersonalDragSides() || dragAction.startsWith("dragDrop") || actions.hotbar(hover.slot) == dragFromHotbar)) {
             drag(actions, hover.slot, dragAction);
         }
     }
 
+    private static void dragStackOnEntry(InventoryActions actions, Slot slot) {
+        if (slot == lastStackDragSlot) return;
+        // Record empty slots and gaps as well, so re-entering a slot can move its new contents.
+        lastStackDragSlot = slot;
+        if (actions.ordinary(slot)) drag(actions, slot, "dragStacks");
+    }
+
     private static void drag(InventoryActions actions, Slot slot, String operation) {
-        if (!visited.add(slot.index) || !slot.hasItem() || !actions.menu.getCarried().isEmpty()) return;
+        if ((!operation.equals("dragStacks") && !visited.add(slot.index))
+            || !slot.hasItem() || !actions.menu.getCarried().isEmpty()) return;
         if (operation.startsWith("dragDrop")) {
             int count = switch (operation) {
                 case "dragDropOne" -> 1;

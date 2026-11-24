@@ -2,7 +2,7 @@ def buildRoot = providers.environmentVariable('COMFORT_ITEMS_BUILD_DIR')
 if (buildRoot.isPresent()) layout.buildDirectory.set(file("${buildRoot.get()}/${"${loader}-${minecraftVersion}"}"))
 
 group = 'dev.comfortableitems'
-version = '0.1.1-dev'
+version = '0.1.2'
 base { archivesName = rootProject.name }
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(targetJava)

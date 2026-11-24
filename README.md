@@ -2,7 +2,7 @@
 
 Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、整理、批量丢弃和自动补充。使用原版容器点击和丢弃操作。Fabric 版只需要 Fabric Loader。
 
-当前发布版本为 `0.1.1`。将与你的 Minecraft 版本及加载器完全对应的一个 JAR 放进客户端 `mods` 目录。安装包、SHA-256 与证据 ZIP 在[Releases](https://github.com/YuZhezA/comfortable-item-management/releases/tag/v0.1.1)。逐档状态见[支持矩阵](docs/support.md)，实际加载器版本与复验方法见[实机验收记录](docs/playtest.md)，版本改动见[更新日志](CHANGELOG.md)。
+当前发布版本为 `0.1.2`。将与你的 Minecraft 版本及加载器完全对应的一个 JAR 放进客户端 `mods` 目录。安装包、SHA-256 与证据 ZIP 在[Releases](https://github.com/YuZhezA/comfortable-item-management/releases/tag/v0.1.2)。逐档状态见[支持矩阵](docs/support.md)，实际加载器版本与复验方法见[实机验收记录](docs/playtest.md)，版本改动见[更新日志](CHANGELOG.md)。
 
 ## 快捷键
 
@@ -23,7 +23,7 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 | 输入 | 效果 |
 | --- | --- |
 | `Ctrl` + 左键拖拽 | 每经过一个槽转移一件 |
-| `Shift` + 左键拖拽 | 每经过一个槽转移整组。独立背包、工作台和创造物品栏的个人背包页在背包主体与快捷栏之间转移 |
+| `Shift` + 左键拖拽 | 每次进入有物品的槽位，向对侧转移整组。按住不松，可经过物品落入的槽位把它移回。个人背包、工作台和创造物品栏个人背包页的两侧是背包主体与快捷栏 |
 | `Shift` + 右键拖拽 | 每经过一个槽转移到只剩一件 |
 | `Alt` + 左键拖拽 | 按经过的槽位取样，转移该侧所有匹配物品 |
 | 持物时 `Shift` + 左键点空槽 | 放下光标物品，再从对侧拉取匹配物品 |
@@ -100,6 +100,7 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 - **Forge 1.20.1、Fabric 1.21.1、NeoForge 1.21.1、NeoForge 1.21.11** 用对应版本的 JDK，运行 `./gradlew -p targets/<加载器>-<Minecraft 版本> build`。1.20.1 用 JDK 17，1.21.x 用 JDK 21。
 - **Fabric 1.21.11、Fabric 26.3、NeoForge 26.3** 用 Gradle 9.7.0，运行 `gradle -p targets/<加载器>-<Minecraft 版本> build`。1.21.11 用 JDK 21，26.3 用 JDK 25。
 - 产物在各项目的 `build/libs/`。设置环境变量 `COMFORT_ITEMS_BUILD_DIR` 可将构建输出写至其他目录，避免缓存和产物占用工作区磁盘。
+- **0.1.2（2026-11-24）** 八个重点组合逐个构建，并在副屏用仅装本模组的真实客户端连接同版原版专用服务端。每档通过 24 项拖拽回归、31 项核心检查和 22 项扩展检查。七档各通过 7 项上游共存检查。加载器、用例和证据见[实机验收记录](docs/playtest.md)与[共存矩阵](docs/coexistence.md)。
 - **0.1.1（2026-11-24）** 八个重点组合逐个构建。每档在副屏使用仅装本模组的 Minecraft 客户端连接同版原版专用服务端，通过 12 项拖拽回归、31 项核心检查和 22 项扩展检查。七个有上游发行的组合各通过 7 项共存检查。实际加载器版本、测试场景和证据见[实机验收记录](docs/playtest.md)与[共存矩阵](docs/coexistence.md)。
 
 ## 制作与协作
@@ -115,6 +116,10 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 - [ItemScroller-Forge / Rock'n Roller](https://github.com/ThinkingStudios/ItemScroller-Forge/tree/88647aa)
 - [Stack Refill](https://github.com/Serilum/Stack-Refill/tree/eb22387)
 - [Configured](https://github.com/MrCrayfish/Configured/tree/9f78baf)
+
+## 0.1.2 改动
+
+- 修复持续按住 `Shift` 和左键时，刚转移的整组物品无法再移回的问题。每次进入槽位时按该槽所属的一侧确定方向，同一槽内移动鼠标只触发一次。
 
 ## 0.1.1 改动
 

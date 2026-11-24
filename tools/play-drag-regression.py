@@ -1,5 +1,6 @@
 """Regression checks for drag transfers using the real client and vanilla server."""
 
+from contextlib import contextmanager
 import importlib.util
 import json
 from pathlib import Path
@@ -31,18 +32,24 @@ def press(ui, key):
     time.sleep(.4)
 
 
-def drag(ui, *positions):
-    ui.move(*positions[0])
+@contextmanager
+def hold_drag(ui, start):
+    ui.move(*start)
     ui.key(0x10)
     ui.u.mouse_event(2, 0, 0, 0, 0)
     try:
         time.sleep(.15)
-        for position in positions[1:]:
-            ui.move(*position)
+        yield
     finally:
         ui.u.mouse_event(4, 0, 0, 0, 0)
         ui.key(0x10, True)
     time.sleep(.45)
+
+
+def drag(ui, start, *positions):
+    with hold_drag(ui, start):
+        for position in positions:
+            ui.move(*position)
 
 
 def read_slots(response):
@@ -95,6 +102,7 @@ def run(ui, server):
     results = []
 
     def check(name, expected, block_expected=None):
+        time.sleep(.25)
         inventory = server.send(f'data get entity {PLAYER} Inventory')
         storage = server.send(f'data get block {BLOCK_POS} Items') if block_expected is not None else None
         ok = read_slots(inventory) == expected and (storage is None or read_slots(storage) == block_expected)
@@ -102,7 +110,6 @@ def run(ui, server):
                         'expectedInventory': expected, 'expectedStorage': block_expected})
         print(f'{name}: {ok}', flush=True)
         (ui.output / 'drag-regression.json').write_text(json.dumps(results, indent=2), encoding='utf-8')
-        ui.move(715, 400)
         ui.capture(name)
 
     server.send(f'gamemode survival {PLAYER}')
@@ -115,7 +122,7 @@ def run(ui, server):
     if not inventory_panel(ui):
         ui.capture('failed-open-inventory')
         raise RuntimeError('Failed to open survival inventory')
-    drag(ui, *BAG, HOTBAR[1])
+    drag(ui, *BAG)
     check('survival-inventory-to-hotbar', MOVED)
     drag(ui, *HOTBAR)
     check('survival-hotbar-to-inventory', CONTENTS)
@@ -123,6 +130,26 @@ def run(ui, server):
     seed(server, CONTENTS | full_hotbar)
     drag(ui, *BAG)
     check('survival-full-hotbar-keeps-items', CONTENTS | full_hotbar)
+    stone = {9: CONTENTS[9]}
+    hotbar_stone = {0: CONTENTS[9]}
+    seed(server, stone)
+    with hold_drag(ui, HOTBAR[0]):
+        ui.move(*BAG[0])
+        check('held-inventory-to-previously-empty-hotbar', hotbar_stone)
+        ui.move(*HOTBAR[0])
+        check('held-hotbar-to-previously-used-inventory-slot', stone)
+        ui.move(*BAG[0])
+        check('held-inventory-to-hotbar-again', hotbar_stone)
+
+    seed(server, stone | full_hotbar)
+    with hold_drag(ui, BAG[0]):
+        server.send(f'item replace entity {PLAYER} hotbar.0 with minecraft:air')
+        time.sleep(.35)
+        ui.move(BAG[0][0] + 3, BAG[0][1])
+        check('held-same-slot-motion-does-not-retrigger', stone | {i: full_hotbar[i] for i in range(1, 9)})
+        ui.move(715, 400)
+        ui.move(*BAG[0])
+        check('held-return-through-gap-retries-source', hotbar_stone | {i: full_hotbar[i] for i in range(1, 9)})
     press(ui, 0x45)
 
     seed(server, CONTENTS)
@@ -131,6 +158,10 @@ def run(ui, server):
     check('survival-workbench-to-hotbar', MOVED)
     drag(ui, *HOTBAR)
     check('survival-workbench-to-inventory', CONTENTS)
+    with hold_drag(ui, BAG[0]):
+        check('held-workbench-to-hotbar', hotbar_stone | {10: CONTENTS[10]})
+        ui.move(*HOTBAR[0])
+        check('held-workbench-back-to-inventory', CONTENTS)
     press(ui, 0x45)
 
     seed(server, CONTENTS | {11: ('white_shulker_box', 1)})
@@ -147,10 +178,14 @@ def run(ui, server):
     press(ui, 0x45)
     ui.move(659, 535)
     ui.mouse()
-    drag(ui, *CREATIVE_BAG, CREATIVE_HOTBAR[1])
+    drag(ui, *CREATIVE_BAG)
     check('creative-inventory-to-hotbar', MOVED)
     drag(ui, *CREATIVE_HOTBAR)
     check('creative-hotbar-to-inventory', CONTENTS)
+    with hold_drag(ui, CREATIVE_BAG[0]):
+        check('held-creative-to-hotbar', hotbar_stone | {10: CONTENTS[10]})
+        ui.move(*CREATIVE_HOTBAR[0])
+        check('held-creative-back-to-inventory', CONTENTS)
     press(ui, 0x45)
 
     seed(server, CONTENTS)
@@ -165,6 +200,12 @@ def run(ui, server):
     check('creative-chest-stash', {}, MOVED)
     drag(ui, *STORAGE)
     check('creative-chest-retrieve', CONTENTS, {})
+    with hold_drag(ui, BAG[0]):
+        check('held-chest-stash', {10: CONTENTS[10]}, hotbar_stone)
+        ui.move(*STORAGE[0])
+        check('held-chest-retrieve', stone | {10: CONTENTS[10]}, {})
+        ui.move(*BAG[0])
+        check('held-chest-stash-again', {10: CONTENTS[10]}, hotbar_stone)
     press(ui, 0x45)
     return all(result['ok'] for result in results)
 
