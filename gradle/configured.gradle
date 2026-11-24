@@ -1,0 +1,16 @@
+def configuredFiles = [
+    'forge-1.20.1': '5180900', 'fabric-1.20.1': '5180902',
+    'neoforge-1.21.1': '7276577', 'fabric-1.21.1': '7276575',
+    'neoforge-1.21.11': '7530375', 'fabric-1.21.11': '7530374'
+]
+def configuredFile = configuredFiles["${loader}-${minecraftVersion}".toString()]
+if (configuredFile != null) {
+    repositories {
+        maven {
+            url = 'https://cursemaven.com/'
+            content { includeModule('curse.maven', 'configured-457570') }
+        }
+    }
+    def configurationName = loader == 'fabric' ? 'modCompileOnly' : 'compileOnly'
+    dependencies.add(configurationName, "curse.maven:configured-457570:${configuredFile}") { transitive = false }
+}

@@ -2,6 +2,7 @@ package dev.comfortableitems;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -92,7 +93,7 @@ public final class Settings {
                 LOG.warn("Could not read {}. Defaults will apply for this session.", path, error);
             }
         } else {
-            save();
+            write(current);
         }
     }
 
@@ -105,17 +106,38 @@ public final class Settings {
         String key = SORT.saveString();
         if (!key.equals(current.sortKey)) {
             current.sortKey = key;
-            save();
+            write(current);
         }
     }
 
-    private static void save() {
-        if (path == null || !readable) return;
+    static JsonObject snapshot() {
+        return JSON.toJsonTree(current).getAsJsonObject();
+    }
+
+    static JsonObject defaults() {
+        return JSON.toJsonTree(new Settings()).getAsJsonObject();
+    }
+
+    static boolean canWrite() {
+        return path != null && readable;
+    }
+
+    static boolean apply(JsonObject draft) {
+        Settings updated = JSON.fromJson(draft, Settings.class);
+        InputConstants.getKey(updated.sortKey);
+        if (!write(updated)) return false;
+        current = updated;
+        applySortKey();
+        return true;
+    }
+
+    private static boolean write(Settings settings) {
+        if (!canWrite()) return false;
         try {
             Files.createDirectories(path.getParent());
             Path temp = Files.createTempFile(path.getParent(), "comfortable-items-", ".json");
             try {
-                Files.writeString(temp, JSON.toJson(current) + System.lineSeparator(), StandardCharsets.UTF_8);
+                Files.writeString(temp, JSON.toJson(settings) + System.lineSeparator(), StandardCharsets.UTF_8);
                 try {
                     Files.move(temp, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
                 } catch (java.nio.file.AtomicMoveNotSupportedException ignored) {
@@ -124,8 +146,10 @@ public final class Settings {
             } finally {
                 Files.deleteIfExists(temp);
             }
+            return true;
         } catch (IOException error) {
             LOG.warn("Could not save {}", path, error);
+            return false;
         }
     }
 

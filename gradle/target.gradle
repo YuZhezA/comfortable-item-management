@@ -2,7 +2,7 @@ def buildRoot = providers.environmentVariable('COMFORT_ITEMS_BUILD_DIR')
 if (buildRoot.isPresent()) layout.buildDirectory.set(file("${buildRoot.get()}/${"${loader}-${minecraftVersion}"}"))
 
 group = 'dev.comfortableitems'
-version = '0.1.2'
+version = '0.1.3'
 base { archivesName = rootProject.name }
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(targetJava)
@@ -11,10 +11,17 @@ java {
 repositories { mavenCentral() }
 
 def variants = []
-if (minecraftVersion == '1.21.1') variants.add('../../versions/components')
+if (minecraftVersion != '1.20.1') variants.add('../../versions/components')
 if (minecraftVersion in ['1.21.11', '26.3']) variants.add('../../versions/modern')
 if (minecraftVersion == '26.3') variants.add('../../versions/sdl')
 if (loader != 'fabric') variants.add("../../versions/${loader}")
+
+if (minecraftVersion != '26.3') {
+    variants.add('../../versions/configured')
+    variants.add(minecraftVersion == '1.20.1' ? '../../versions/configured-legacy' : '../../versions/configured-modern')
+}
+
+if (loader == 'fabric') variants.add(minecraftVersion == '26.3' ? '../../versions/modmenu' : '../../versions/configured-fabric')
 
 def sharedJava = file('../../src/main/java')
 def generatedJava = layout.buildDirectory.dir('generated/source/target')
@@ -41,6 +48,7 @@ processResources {
     filesMatching('fabric.mod.json') {
         filter { it.replace('"1.20.1"', '"' + minecraftVersion + '"').replace('>=17', '>=' + targetJava)
             .replace('>=0.16.14', '>=' + loaderVersion) }
+        if (minecraftVersion == '26.3') filter { line -> line.contains('"custom"') ? null : line }
         expand version: project.version
     }
     filesMatching('comfortable_items.mixins.json') {
@@ -53,3 +61,6 @@ processResources {
     }
 }
 jar { manifest.attributes('Implementation-Version': project.version) }
+
+apply from: '../../gradle/mod-menu.gradle'
+apply from: '../../gradle/configured.gradle'

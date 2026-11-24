@@ -2,7 +2,7 @@
 
 Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、整理、批量丢弃和自动补充。使用原版容器点击和丢弃操作。Fabric 版只需要 Fabric Loader。
 
-当前发布版本为 `0.1.2`。将与你的 Minecraft 版本及加载器完全对应的一个 JAR 放进客户端 `mods` 目录。安装包、SHA-256 与证据 ZIP 在[Releases](https://github.com/YuZhezA/comfortable-item-management/releases/tag/v0.1.2)。逐档状态见[支持矩阵](docs/support.md)，实际加载器版本与复验方法见[实机验收记录](docs/playtest.md)，版本改动见[更新日志](CHANGELOG.md)。
+安装包请按加载器和游戏版本选择。将与你的 Minecraft 版本及加载器完全对应的一个 JAR 放进客户端 `mods` 目录。安装包、SHA-256 与证据 ZIP 在[Releases](https://github.com/YuZhezA/comfortable-item-management/releases)。逐档状态见[支持矩阵](docs/support.md)，实际加载器版本与复验方法见[实机验收记录](docs/playtest.md)，版本改动见[更新日志](CHANGELOG.md)。
 
 ## 快捷键
 
@@ -92,7 +92,17 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 | `outsideMatchingAlt` / `outsideMatchingShift` | `ALT+CLICK` / `SHIFT+CLICK` |
 | `outsideAll` / `outsideAllWithHotbar` | `ALT+SHIFT+CLICK` / `ALT+SHIFT+CTRL+CLICK` |
 
-启用损坏前替换时，原件低于 10 点且有至少剩余 10 点的备件才互换。装备和工具严格补充比较除当前损耗以外的数据。护甲按穿戴槽筛选，盾牌作装备，火把和图腾作普通物品。可选的 Configured 设置界面尚未接入。JSON 可独立使用。
+启用损坏前替换时，原件低于 10 点且有至少剩余 10 点的备件才互换。装备和工具严格补充比较除当前损耗以外的数据。护甲按穿戴槽筛选，盾牌作装备，火把和图腾作普通物品。
+
+从 `0.1.3` 起，可在游戏内编辑同一个 `config/comfortable-items.json`。点击「保存」后立即生效，取消或按 `Esc` 会舍弃未保存的编辑。配置页和原版「按键绑定」共享整理键。手工改 JSON 后重启客户端。游戏内有常规、整理、自动补充和快捷手势四组。排序优先级和类别列表使用 JSON 字符串数组，例如 `["minecraft:stone"]`。
+
+| 加载器 | 打开配置 |
+| --- | --- |
+| Forge 1.20.1 | 主菜单 → Mods → 舒适物品管理 → Config |
+| NeoForge 1.21.1、1.21.11、26.3 | Mods → 舒适物品管理 → Config |
+| Fabric 四档 | 安装可选的 Mod Menu，通过 Mods 中的模组配置按钮进入。Fabric Loader 自身没有 Mods 配置列表 |
+
+MrCrayfish 的 Configured 可发现本模组的客户端配置。默认打开本模组的页面。NeoForge 1.21.1 的 Catalogue 列表也可以用同一个 Config 按钮。若想使用 Configured 自己的界面，可开启 Configured 的 `forceConfiguredMenu` 后重启，再通过相同的 Config 按钮进入。Minecraft 1.20.1 使用 `config/configured-client.toml` 中的 `forceConfiguredMenu = true`。1.21.1 和 1.21.11 使用 `config/configured-client.properties` 中的 `forceConfiguredMenu=true`。Fabric 安装 Mod Menu 和对应的 Configured 后也可这样切换。已接入的 Configured 档位见[配置菜单验收记录](docs/config-menus.md)。MrCrayfish 的 Configured 暂无 26.3 发行，这一档可用上表的配置入口。Configured、Framework、Mod Menu 和 Fabric API 均为可选组件。
 
 ## 构建与测试
 
@@ -100,6 +110,7 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 - **Forge 1.20.1、Fabric 1.21.1、NeoForge 1.21.1、NeoForge 1.21.11** 用对应版本的 JDK，运行 `./gradlew -p targets/<加载器>-<Minecraft 版本> build`。1.20.1 用 JDK 17，1.21.x 用 JDK 21。
 - **Fabric 1.21.11、Fabric 26.3、NeoForge 26.3** 用 Gradle 9.7.0，运行 `gradle -p targets/<加载器>-<Minecraft 版本> build`。1.21.11 用 JDK 21，26.3 用 JDK 25。
 - 产物在各项目的 `build/libs/`。设置环境变量 `COMFORT_ITEMS_BUILD_DIR` 可将构建输出写至其他目录，避免缓存和产物占用工作区磁盘。
+- **0.1.3（2026-11-24）** 八档各通过 4 项配置、31 项原版联机核心、24 项拖拽和 22 项扩展检查。六档通过 Configured 编辑验证，七档通过上游共存检查。NeoForge 1.21.1 另复验了 Catalogue 中的 Config 按钮和重启后使用新整理键。见[安装包和证据](https://github.com/YuZhezA/comfortable-item-management/releases/tag/v0.1.3)及[配置验收矩阵](docs/config-menus.md)。
 - **0.1.2（2026-11-24）** 八个重点组合逐个构建，并在副屏用仅装本模组的真实客户端连接同版原版专用服务端。每档通过 24 项拖拽回归、31 项核心检查和 22 项扩展检查。七档各通过 7 项上游共存检查。加载器、用例和证据见[实机验收记录](docs/playtest.md)与[共存矩阵](docs/coexistence.md)。
 - **0.1.1（2026-11-24）** 八个重点组合逐个构建。每档在副屏使用仅装本模组的 Minecraft 客户端连接同版原版专用服务端，通过 12 项拖拽回归、31 项核心检查和 22 项扩展检查。七个有上游发行的组合各通过 7 项共存检查。实际加载器版本、测试场景和证据见[实机验收记录](docs/playtest.md)与[共存矩阵](docs/coexistence.md)。
 
@@ -110,12 +121,18 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 
 ## 参考与许可
 
-[上游行为核对表](docs/references.md)记录对应源码、快捷键与取舍。基于行为和文档独立实现。Item Scroller 的权限文件为 LGPLv3，Forge 移植仓库同样为 LGPLv3。Stack Refill 源仓库标为 All Rights Reserved，仅参考公开行为。Configured 提供 LGPLv3 模组许可，目前只作为可选集成的原始资料。
+[上游行为核对表](docs/references.md)记录对应源码、快捷键与取舍。基于行为和文档独立实现。Item Scroller 的权限文件为 LGPLv3，Forge 移植仓库同样为 LGPLv3。Stack Refill 源仓库标为 All Rights Reserved，仅参考公开行为。Configured 的 API 按版本作为可选编译依赖，发布 JAR 不包含 Configured 或 Mod Menu 的实现。
 
 - [Item Scroller](https://github.com/sakura-ryoko/itemscroller/tree/9d67667)
 - [ItemScroller-Forge / Rock'n Roller](https://github.com/ThinkingStudios/ItemScroller-Forge/tree/88647aa)
 - [Stack Refill](https://github.com/Serilum/Stack-Refill/tree/eb22387)
 - [Configured](https://github.com/MrCrayfish/Configured/tree/9f78baf)
+
+## 0.1.3 改动
+
+- 修复 Forge 和 NeoForge 模组列表中「舒适物品管理」的 Config 按钮不可用的问题。
+- Fabric 四档接入可选的 Mod Menu。支持的 Configured 版本可编辑同一份 JSON。
+- 配置页支持即时保存、取消和整理键同步。见[配置菜单验收记录](docs/config-menus.md)。
 
 ## 0.1.2 改动
 

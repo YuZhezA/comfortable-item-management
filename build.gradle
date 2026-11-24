@@ -6,7 +6,7 @@ def buildRoot = providers.environmentVariable('COMFORT_ITEMS_BUILD_DIR')
 if (buildRoot.isPresent()) layout.buildDirectory.set(file("${buildRoot.get()}/${'fabric-1.20.1'}"))
 
 group = 'dev.comfortableitems'
-version = '0.1.2'
+version = '0.1.3'
 base { archivesName = 'comfortable-items-fabric-1.20.1' }
 
 repositories { mavenCentral() }
@@ -41,3 +41,9 @@ processResources {
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') { expand version: project.version }
 }
+
+ext.loader = 'fabric'
+ext.minecraftVersion = '1.20.1'
+apply from: 'gradle/mod-menu.gradle'
+sourceSets.main.java.srcDirs('versions/configured', 'versions/configured-legacy', 'versions/configured-fabric')
+apply from: 'gradle/configured.gradle'

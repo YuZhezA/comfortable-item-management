@@ -1,0 +1,21 @@
+package dev.comfortableitems;
+
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+
+abstract class ConfigScreenBase extends Screen {
+    ConfigScreenBase(Component title) {
+        super(title);
+    }
+
+    void returnTo(Screen parent) {
+        minecraft.setScreen(parent);
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        renderBackground(graphics);
+        super.render(graphics, mouseX, mouseY, partialTick);
+    }
+}

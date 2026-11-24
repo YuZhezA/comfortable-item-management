@@ -53,7 +53,7 @@ def native_window(pid):
     if len(found)==1: return found[0]
     return None
 
-def launch(target, jar, mc_dir, instance, extra_mods, loopback_port, boot_override=None, assets=None):
+def launch(target, jar, mc_dir, instance, extra_mods, loopback_port, boot_override=None, assets=None, title_only=False, configured_ui=False):
     game=target.split('-',1)[1]
     profile=mc_dir/'versions'/PROFILES[target]
     basename=profile.name
@@ -91,6 +91,13 @@ def launch(target, jar, mc_dir, instance, extra_mods, loopback_port, boot_overri
     if boot_override:
         config=instance/'config'; config.mkdir()
         (config/'comfortable-items.json').write_text(json.dumps(boot_override),encoding='utf-8')
+    if configured_ui:
+        config = instance / "config"
+        config.mkdir(exist_ok=True)
+        if target.endswith("-1.20.1"):
+            (config / "configured-client.toml").write_text("forceConfiguredMenu = true\n", encoding="ascii")
+        else:
+            (config / "configured-client.properties").write_text("forceConfiguredMenu=true\n", encoding="ascii")
     values = {'natives_directory':str(instance/'natives'), 'launcher_name':'ComfortableItemsQA', 'launcher_version':'1',
               'classpath':os.pathsep.join(classpath),'library_directory':str(library_root),'classpath_separator':os.pathsep,
               'auth_player_name':'ComfortQA','version_name':basename,'game_directory':str(instance),'assets_root':str(assets or mc_dir/'assets'),
@@ -104,7 +111,9 @@ def launch(target, jar, mc_dir, instance, extra_mods, loopback_port, boot_overri
             index = game_args.index(option)
             del game_args[index:index + 2]
     args=['-Xmx1200M','-Dfile.encoding=UTF-8',*map(interpolate,flatten(data['arguments']['jvm'])),data['mainClass'],
-          *game_args,'--width','984','--height','751','--quickPlayMultiplayer',f'127.0.0.1:{loopback_port}']
+          *game_args,'--width','984','--height','751']
+    if not title_only:
+        args.extend(('--quickPlayMultiplayer', f'127.0.0.1:{loopback_port}'))
     arg_path=instance/'launch.args'
     arg_path.write_text(''.join('"'+arg.replace('\\','/').replace('"','\\"')+'"\n' for arg in args),encoding='utf-8')
     log_path=instance/'console.log'
@@ -136,5 +145,7 @@ if __name__=='__main__':
     p.add_argument('--with-mod',type=Path,action='append',default=[])
     p.add_argument('--boot-config',type=json.loads)
     p.add_argument('--assets-dir',type=Path)
+    p.add_argument('--title-only', action='store_true')
+    p.add_argument('--configured-ui', action='store_true')
     a=p.parse_args()
-    launch(a.target,a.jar.resolve(),a.mc_dir.resolve(),a.instance.resolve(),a.with_mod,PORTS[a.target.split('-',1)[1]],a.boot_config,a.assets_dir)
+    launch(a.target,a.jar.resolve(),a.mc_dir.resolve(),a.instance.resolve(),a.with_mod,PORTS[a.target.split('-',1)[1]],a.boot_config,a.assets_dir,a.title_only,a.configured_ui)

@@ -1,5 +1,13 @@
 # 实机验收记录
 
+## 0.1.3
+
+2026-11-24 在 Windows 副屏 `DISPLAY2` 逐档验证发布 JAR。八个客户端各自只装本模组并连接同版 Mojang 原版专用服务端，每档通过 31 项核心用例。覆盖批量转移、快捷栏范围、满箱余量、整理空槽、丢弃、主手和副手补充，并用服务端的实际物品数据确认结果。每档另通过 24 项持续拖拽和 22 项扩展用例。扩展用例包括四护甲槽、副手盾牌和工具、耐久边界、JSON 键位、严格丢弃和按住丢弃键只执行一轮。
+
+独立实例验证了八档的配置入口、保存、取消、键位校验与原版按键绑定双向同步，六档验证 Configured 页面写回，NeoForge 1.21.1 复验 Catalogue 界面和整理键重启持久化。实际加载器、覆盖情况及其他菜单模组版本见[配置菜单验收](config-menus.md)。七档各通过 7 项 Item Scroller 或 Rock’n Roller 共存验证。NeoForge 26.3 未见对应上游发行，详见[共存记录](coexistence.md)。
+
+[本次发行](https://github.com/YuZhezA/comfortable-item-management/releases/tag/v0.1.3)中的 `qa-evidence.zip` 含逐项结果、截图及构建摘要。`SHA256SUMS.txt` 对应实测所用的八个安装 JAR。
+
 ## 0.1.2
 
 2026-11-24 在 Windows 副屏 `DISPLAY2` 启动八档干净客户端，连接同版 Mojang 原版专用服务端。每档均核对发布 JAR 的 SHA-256 与实际测试实例安装的文件。

@@ -14,3 +14,6 @@ type="required"
 versionRange="[1.21.1]"
 ordering="NONE"
 side="CLIENT"
+
+[modproperties.comfortable_items]
+configuredProviders = ["dev.comfortableitems.ConfiguredProvider"]
