@@ -83,7 +83,7 @@ def launch(target, jar, mc_dir, instance, extra_mods, loopback_port, boot_overri
     mods.mkdir()
     for mod in [jar,*extra_mods]: shutil.copy2(mod,mods/mod.name)
     options = {'guiScale':2,'fullscreen':'false','pauseOnLostFocus':'false','renderDistance':4,
-               'simulationDistance':5,'soundCategory_master':'0.0','onboardAccessibility':'false','skipMultiplayerWarning':'true','tutorialStep':'none','maxFps':40}
+               'simulationDistance':5,'soundCategory_master':'0.0','onboardAccessibility':'false','lang':'en_us','skipMultiplayerWarning':'true','tutorialStep':'none','maxFps':40}
     (instance/'options.txt').write_text(''.join(f'{k}:{v}\n' for k,v in options.items()),encoding='ascii')
     natives = profile/(basename+'-natives')
     if natives.exists(): shutil.copytree(natives,instance/'natives')
@@ -113,7 +113,7 @@ def launch(target, jar, mc_dir, instance, extra_mods, loopback_port, boot_overri
         process=subprocess.Popen([f'C:/Program Files/Java/jdk-{java_major}/bin/java.exe','@'+str(arg_path)],cwd=instance,
             stdout=log,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW)
     pid=process.pid
-    manifest={'target':target,'profile':basename,'java':java_major,'port':loopback_port,'pid':pid,
+    manifest={'target':target,'profile':basename,'java':java_major,'port':loopback_port,'pid':pid,'gameJar':str(game_jar),
               'mods':{p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in mods.glob('*.jar')}}
     (instance/'launch.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')
     print(json.dumps(manifest),flush=True)

@@ -58,6 +58,7 @@ public final class Settings {
             Map.entry("moveAll", "ALT+SHIFT+LEFT"), Map.entry("moveMatching", "ALT+SHIFT+RIGHT"),
             Map.entry("moveAllWithHotbar", "ALT+SHIFT+CTRL+LEFT"), Map.entry("moveMatchingWithHotbar", "ALT+SHIFT+CTRL+RIGHT"),
             Map.entry("dragStacks", "SHIFT+LEFT"), Map.entry("dragLeaveOne", "SHIFT+RIGHT"),
+            Map.entry("placeMatching", "SHIFT+LEFT"),
             Map.entry("dragOne", "CTRL+LEFT"), Map.entry("dragMatching", "ALT+LEFT"),
             Map.entry("dragDropStacks", "SHIFT+DROP+LEFT"), Map.entry("dragDropLeaveOne", "SHIFT+DROP+RIGHT"),
             Map.entry("dragDropOne", "DROP+LEFT"), Map.entry("scrollOne", "WHEEL"),

@@ -160,6 +160,18 @@ public final class ClientActions {
             holdMouse(out, button, hover.screen);
             return true;
         }
+        ItemStack carried = actions.menu.getCarried();
+        if (button == 0 && !carried.isEmpty() && actions.ordinary(hover.slot) && !hover.slot.hasItem()
+            && !action(chord(modifiers, dropHeld, "LEFT"), "placeMatching").isEmpty()
+            && hover.slot.mayPlace(carried) && hover.slot.getMaxStackSize(carried) >= carried.getCount()) {
+            boolean player = actions.playerSide(hover.slot);
+            ItemStack sample = carried.copy();
+            actions.click(hover.slot.index, 0, InventoryActions.Click.PICKUP);
+            actions.transfer(actions.side(!player, true), actions.side(player, true),
+                item -> InventoryActions.exact(item, sample), Integer.MAX_VALUE);
+            holdMouse("placeMatching", button, hover.screen);
+            return true;
+        }
         if (!(actions.ordinary(hover.slot) && actions.menu.getCarried().isEmpty())) return false;
         String chord = chord(modifiers, dropHeld, button == 0 ? "LEFT" : "RIGHT");
         String operation = action(chord, "moveAllWithHotbar", "moveMatchingWithHotbar", "moveAll", "moveMatching",
