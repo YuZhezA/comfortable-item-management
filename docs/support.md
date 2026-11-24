@@ -1,6 +1,6 @@
 # 官方发行与构建矩阵
 
-核对日期为 2026-11-24。游戏档来自 [Mojang manifest](https://piston-meta.mojang.com/mc/game/version_manifest_v2.json) 的 `release`。加载器发行分别来自 [Forge Maven](https://maven.minecraftforge.net/net/minecraftforge/forge/maven-metadata.xml)、[NeoForge Maven](https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml) 和 [Fabric Meta](https://meta.fabricmc.net/v2/versions)。表中的 Forge 和 NeoForge 数字指 Maven 构件示例，Fabric 数字指按游戏版查询 `/v2/versions/loader/{minecraft}` 得到的稳定加载器示例。⭐ 为必测档。表格记录发行可用性及 0.1.1-dev 的验证状态。
+核对日期为 2026-11-24。游戏档来自 [Mojang manifest](https://piston-meta.mojang.com/mc/game/version_manifest_v2.json) 的 `release`。加载器发行分别来自 [Forge Maven](https://maven.minecraftforge.net/net/minecraftforge/forge/maven-metadata.xml)、[NeoForge Maven](https://maven.neoforged.net/releases/net/neoforged/neoforge/maven-metadata.xml) 和 [Fabric Meta](https://meta.fabricmc.net/v2/versions)。表中的 Forge 和 NeoForge 数字指 Maven 构件示例，Fabric 数字指按游戏版查询 `/v2/versions/loader/{minecraft}` 得到的稳定加载器示例。⭐ 为必测档。表格记录发行可用性及 0.1.1 的验证状态。
 
 | Minecraft | Forge | NeoForge | Fabric |
 | --- | --- | --- | --- |

@@ -2,7 +2,7 @@
 
 Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、整理、批量丢弃和自动补充。使用原版容器点击和丢弃操作。Fabric 版只需要 Fabric Loader。
 
-当前产物版本为 `0.1.1-dev`。将与你的 Minecraft 版本及加载器完全对应的一个 JAR 放进客户端 `mods` 目录。安装包、SHA-256 与证据 ZIP 在[Releases](https://github.com/YuZhezA/comfortable-item-management/releases/tag/v0.1.1-dev)。逐档状态见[支持矩阵](docs/support.md)，实际加载器版本与复验方法见[实机验收记录](docs/playtest.md)。
+当前发布版本为 `0.1.1`。将与你的 Minecraft 版本及加载器完全对应的一个 JAR 放进客户端 `mods` 目录。安装包、SHA-256 与证据 ZIP 在[Releases](https://github.com/YuZhezA/comfortable-item-management/releases/tag/v0.1.1)。逐档状态见[支持矩阵](docs/support.md)，实际加载器版本与复验方法见[实机验收记录](docs/playtest.md)，版本改动见[更新日志](CHANGELOG.md)。
 
 ## 快捷键
 
@@ -100,7 +100,7 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 - **Forge 1.20.1、Fabric 1.21.1、NeoForge 1.21.1、NeoForge 1.21.11** 用对应版本的 JDK，运行 `./gradlew -p targets/<加载器>-<Minecraft 版本> build`。1.20.1 用 JDK 17，1.21.x 用 JDK 21。
 - **Fabric 1.21.11、Fabric 26.3、NeoForge 26.3** 用 Gradle 9.7.0，运行 `gradle -p targets/<加载器>-<Minecraft 版本> build`。1.21.11 用 JDK 21，26.3 用 JDK 25。
 - 产物在各项目的 `build/libs/`。设置环境变量 `COMFORT_ITEMS_BUILD_DIR` 可将构建输出写至其他目录，避免缓存和产物占用工作区磁盘。
-- **0.1.1-dev（2026-11-24）** 八个重点组合逐个构建。每档在副屏使用仅装本模组的 Minecraft 客户端连接同版原版专用服务端，通过 12 项拖拽回归、31 项核心检查和 22 项扩展检查。七个有上游发行的组合各通过 7 项共存检查。实际加载器版本、测试场景和证据见[实机验收记录](docs/playtest.md)与[共存矩阵](docs/coexistence.md)。
+- **0.1.1（2026-11-24）** 八个重点组合逐个构建。每档在副屏使用仅装本模组的 Minecraft 客户端连接同版原版专用服务端，通过 12 项拖拽回归、31 项核心检查和 22 项扩展检查。七个有上游发行的组合各通过 7 项共存检查。实际加载器版本、测试场景和证据见[实机验收记录](docs/playtest.md)与[共存矩阵](docs/coexistence.md)。
 
 ## 制作与协作
 
@@ -116,8 +116,9 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 - [Stack Refill](https://github.com/Serilum/Stack-Refill/tree/eb22387)
 - [Configured](https://github.com/MrCrayfish/Configured/tree/9f78baf)
 
-## 0.1.1-dev 改动
+## 0.1.1 改动
 
+- 统一 GitHub Release 标签、标题和安装包文件名，补齐历史更新日志。安装包沿用已完成实机验收的文件。
 - 修复 `Shift` + 左键等转移拖拽在创造模式的工作台、箱子和创造物品栏个人背包页不能使用的问题。
 - 独立背包与工作台的转移拖拽以按下时的位置确定方向，在背包主体和快捷栏间移动。合成格不参与，目标无空间时物品留在原槽。
 - 潜影盒储物槽可参与转移，继续遵循原版的潜影盒嵌套限制。

@@ -1,6 +1,6 @@
 # 实机验收记录
 
-## 0.1.1-dev
+## 0.1.1
 
 2026-11-24 在 Windows 副屏 `DISPLAY2` 运行。八个客户端实例的 `mods` 目录各只有对应的待发布 JAR，均连接同版本的 Mojang 原版专用服务端。断言读取服务端认可的物品种类、堆叠数量和槽位，并保存客户端截图。
 
@@ -17,9 +17,9 @@
 
 拖拽回归覆盖生存背包与工作台的双向转移、快捷栏满时保留原槽、创造物品栏个人背包页的双向转移、创造模式的工作台和箱子、潜影盒双向转移与原版嵌套限制。Fabric 1.21.11 与 Fabric 26.3 在窗口焦点或测试场地掉落物影响输入和库存后，用同一 JAR 在隔离客户端重跑。扩展测试覆盖 JSON 和原版按键界面改键、预损替换耐久边界、护甲四槽、附魔和丢弃行为。七档通过 7 个共存场景，NeoForge 26.3 暂无可测的上游发行。详见[共存记录](coexistence.md)。
 
-八个重新构建的 JAR 均逐条目比对过类文件和资源内容。发布使用实测 JAR 原件，保留原 SHA-256。构建源码提交、实测 JAR 哈希与逐项证据见[本次发行](https://github.com/YuZhezA/comfortable-item-management/releases/tag/v0.1.1-dev)中的 `qa-evidence.zip` 与 `SHA256SUMS.txt`。
+八个重新构建的 JAR 均逐条目比对过类文件和资源内容。发布使用实测 JAR 原件，保留原 SHA-256。构建源码提交、实测 JAR 哈希与逐项证据见[本次发行](https://github.com/YuZhezA/comfortable-item-management/releases/tag/v0.1.1)中的 `qa-evidence.zip` 与 `SHA256SUMS.txt`。
 
-## 0.1.0-dev
+## 0.1.0
 
 2026-11-24，Windows，副屏 `DISPLAY2`。测试窗口客户区为 `(-1792, 116, 984, 751)`。每次建立干净客户端实例，从 `mods` 目录加载待交付 JAR。核心测试的 `mods` 清单每次只有本模组。四个原版专用服务端分别使用对应版本的 Mojang 服务端 JAR，在本机回环网络接受测试连接。
 
@@ -41,7 +41,11 @@
 - [共存矩阵](coexistence.md)记录上游构件来源与实测结果。只有共存实例包含上游模组和其依赖。NeoForge 1.21.11 的一次共存场景被流浪商人挡住箱子，截图定位后在夹具中清理场地，再以同一个 JAR 重跑。
 - 每个安装产物与测试实例的 SHA-256 逐一核对。`launch.json` 记录运行配置、实际加载器版本与装入的 JAR 哈希。`mod-config.json` 记录干净实例的默认配置与扩展轮次改键结果。`playtest.json` 记录输入、预期及原版认可的状态。`manifest.json` 汇总构建、客户端、用例和状态，并记录构建源码提交及发布文档提交。
 
-安装 JAR 来自源码提交 `bdaf05c`。各包的 SHA-256 及截图、日志和逐项原版服务端读取详见[Releases](https://github.com/YuZhezA/comfortable-item-management/releases/tag/v0.1.0-dev)中的 `SHA256SUMS.txt` 和 `qa-evidence.zip`。
+安装 JAR 来自源码提交 `bdaf05c`。各包的 SHA-256 及截图、日志和逐项原版服务端读取详见[Releases](https://github.com/YuZhezA/comfortable-item-management/releases/tag/v0.1.0)中的 `SHA256SUMS.txt` 和 `qa-evidence.zip`。
+
+## 发行文件命名
+
+`v0.1.0` 和 `v0.1.1` 迁移了 Release 标签、标题和安装包文件名。安装包内容、SHA-256 和原始实机证据与最初发布时一致。证据 ZIP 和游戏内模组列表仍会显示测试时的内部构建版本号。`SHA256SUMS.txt` 使用更新后的安装包文件名。
 
 ## 原版服务端 JAR SHA-1
 
