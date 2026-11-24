@@ -3,6 +3,6 @@
   "minVersion": "0.8",
   "package": "dev.comfortableitems.mixin",
   "compatibilityLevel": "JAVA_17",
-  "client": ["OptionsMixin", "ContainerAccess", "KeyboardMixin", "MouseMixin", "MinecraftMixin", "LocalPlayerMixin", "LivingEntityMixin", "GameModeMixin"],
+  "client": ["OptionsMixin", "ContainerAccess", "KeyboardMixin", "MouseMixin", "MinecraftMixin", "LocalPlayerMixin", "LivingEntityMixin", "ClientPacketListenerMixin", "GameModeMixin"],
   "injectors": {"defaultRequire": 1}
 }

@@ -79,6 +79,16 @@ def evidence(name, player_want, chest_want, player_exclude=(), chest_exclude=(),
                     'equipment':equipment, 'expected':{'player':player_want,'chest':chest_want,'playerAbsent':player_exclude,'chestAbsent':chest_exclude}})
     print(name, ok, flush=True)
     (ui.output/report_name).write_text(json.dumps(results,ensure_ascii=False,indent=2),encoding='utf-8')
+    shots = {
+        'Alt+Shift+left stashes backpack and preserves hotbar': 'after-stash',
+        'Full chest preserves remainder': 'full-chest-remainder',
+        'Sort hovered empty container slot and merge stacks': 'after-sort',
+        'Container filtered drop includes hotbar with Ctrl': 'after-filtered-drop',
+        'Placing last main-hand block refills from backpack': 'main-hand-refilled',
+        'Last off-hand torch refills with seven spare torches': 'off-hand-refilled',
+        'Death protection consumes and refills the off-hand totem': 'off-hand-totem-refilled',
+    }
+    if name in shots: ui.capture(shots[name])
 
 def normalized(snbt):
     items = []
@@ -162,14 +172,18 @@ def test_bindings():
         if back:
             button(back)
             break
-        done = labels.find('Done', (0, ui.r.bottom-100, ui.r.right, ui.r.bottom))
+        done = labels.find('Done')
         if not done: break
         button(done)
     config = json.loads((ui.instance/'config/comfortable-items.json').read_text('utf-8'))
+    server.send('tp ComfortQA 0.5 -60 0.5 0 31')
+    time.sleep(.65)
     fixture(container(3,'stone',7),container(11,'stone',6),container(17,'dirt',5))
     ui.mouse(1)
     time.sleep(.45)
-    if not ui.inventory_panel(): raise RuntimeError('Could not reopen chest after changing key binds')
+    if not ui.inventory_panel():
+        ui.capture('failed-reopen-chest')
+        raise RuntimeError('Could not reopen chest after changing key binds')
     ui.move(*CHEST)
     press(0x4a)
     evidence('Old JSON binding J is inactive after changing it in the UI', [],
@@ -178,6 +192,7 @@ def test_bindings():
     evidence('Vanilla key bindings set K, persisted it to JSON and sorted from an empty slot', [],
              [state(0,'dirt',5),state(1,'stone',13)], predicate=lambda inv, eq: config['sortKey']=='key.keyboard.k')
     ui.capture('binding-sorted')
+    (ui.output/'binding-persistence.json').write_text(json.dumps({'before':'key.keyboard.j','after':config['sortKey']},indent=2),encoding='utf-8')
     test_drop_edges()
 
 
@@ -248,6 +263,11 @@ def test_durability():
     evidence('At nine, choose the strict spare with most durability and store the original',
              [state(0,'wooden_pickaxe',1),state(9,'wooden_pickaxe',1),state(10,'wooden_pickaxe',1),state(11,'wooden_pickaxe',1)], [],
              predicate=lambda inv, eq: [damage_at(inv,eq,i) for i in (0,9,10,11)] == [13,49,50,1])
+    fixture(player('inventory.0', damage('wooden_pickaxe',49)),player('inventory.1', damage('wooden_pickaxe',49)),
+            player('hotbar.0',damage('wooden_pickaxe',50)))
+    evidence('A ten-point spare is eligible and tied spares prefer the first backpack slot',
+             [state(0,'wooden_pickaxe',1),state(9,'wooden_pickaxe',1),state(10,'wooden_pickaxe',1)], [],
+             predicate=lambda inv, eq: [damage_at(inv,eq,i) for i in (0,9,10)] == [49,50,49])
     fixture(player('inventory.0', damage('shield',13)),player('weapon.offhand',damage('shield',327)))
     evidence('Off-hand shield uses equipment replacement and stores original',
              [state(-106,'shield',1),state(9,'shield',1)], [],
@@ -274,7 +294,9 @@ def test_durability():
              [state(slot,item,1) for _,slot,item,_ in pieces], [],
              [f'Slot: {i}b' for i in range(9,13)],
              predicate=lambda inv, eq: all(damage_at(inv,eq,slot,field) == 1 for field,slot,_,_ in pieces))
+    press(0x45)  # Open the player's inventory so the equipped replacements are visible.
     ui.capture('durability')
+    press(ESC)
 
 
 def test_coexistence():
@@ -421,6 +443,21 @@ with rcon.Rcon() as server:
     server.send('tp ComfortQA 0.5 -60 0.5 0 58')
     time.sleep(.35); button((492,375),right=True); time.sleep(.55)
     evidence('Last off-hand torch refills with seven spare torches',[state(-106,'torch',7)],[],['Slot: 9b'])
+    fixture(player('weapon.offhand','totem_of_undying'), player('inventory.0','totem_of_undying'))
+    server.send('damage ComfortQA 100 minecraft:generic')
+    time.sleep(.75)
+    evidence('Death protection consumes and refills the off-hand totem',
+             [state(-106,'totem_of_undying',1)],[],[state(9,'totem_of_undying',1)])
+    server.send('effect clear ComfortQA')
+    server.send('effect give ComfortQA instant_health 1 4 true')
+    fixture(player('hotbar.0','totem_of_undying'), player('weapon.offhand','totem_of_undying'),
+            player('inventory.0','totem_of_undying'))
+    server.send('damage ComfortQA 100 minecraft:generic')
+    time.sleep(.75)
+    evidence('Death protection consumes the main-hand totem first and refills it',
+             [state(0,'totem_of_undying',1),state(-106,'totem_of_undying',1)],[],[state(9,'totem_of_undying',1)])
+    server.send('effect clear ComfortQA')
+    server.send('effect give ComfortQA instant_health 1 4 true')
     fixture(player('weapon.offhand','torch',4),player('inventory.0','torch',7))
     press(0x46)
     evidence('Manual off-hand swap does not refill',[state(0,'torch',4),state(9,'torch',7)],[],['Slot: -106b'])

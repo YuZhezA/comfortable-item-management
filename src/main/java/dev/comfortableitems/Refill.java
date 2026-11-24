@@ -7,6 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import java.util.Arrays;
 
@@ -35,6 +36,21 @@ public final class Refill {
         if (!stack.isEmpty()) {
             snapshots[index] = stack.copy();
             actions[index] = tick + 20;
+        }
+    }
+
+    public static void deathProtection(LocalPlayer player) {
+        if (player != owner || player.isSpectator()) return;
+        Inventory inventory = player.getInventory();
+        // Vanilla tries the selected main hand before the offhand.
+        int selected = ClientPlatform.selected(inventory);
+        for (int index : new int[] {selected, OFFHAND}) {
+            ItemStack current = inventory.getItem(index);
+            ItemStack before = current.isEmpty() ? snapshots[index] : current;
+            if (!before.is(Items.TOTEM_OF_UNDYING)) continue;
+            snapshots[index] = before.copy();
+            actions[index] = tick + 20;
+            return;
         }
     }
 
