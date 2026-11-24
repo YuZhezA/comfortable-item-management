@@ -1,0 +1,43 @@
+plugins {
+    id 'fabric-loom' version '1.10.5'
+}
+
+def buildRoot = providers.environmentVariable('COMFORT_ITEMS_BUILD_DIR')
+if (buildRoot.isPresent()) layout.buildDirectory.set(file("${buildRoot.get()}/${'fabric-1.20.1'}"))
+
+group = 'dev.comfortableitems'
+version = '0.1.0-dev'
+base { archivesName = 'comfortable-items-fabric-1.20.1' }
+
+repositories { mavenCentral() }
+
+dependencies {
+    minecraft 'com.mojang:minecraft:1.20.1'
+    mappings loom.officialMojangMappings()
+    modImplementation 'net.fabricmc:fabric-loader:0.16.14'
+}
+
+loom {
+    runs {
+        client {
+            runDir 'run/fabric-1.20.1'
+            programArgs '--username', 'ComfortQA'
+        }
+        remove server
+    }
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') { expand version: project.version }
+}

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "comfortable_items",
+  "version": "${version}",
+  "name": "舒适物品管理",
+  "description": "Client-side container management and inventory refill.",
+  "environment": "client",
+  "entrypoints": { "client": ["dev.comfortableitems.FabricEntry"] },
+  "mixins": ["comfortable_items.mixins.json"],
+  "depends": { "fabricloader": ">=0.16.14", "minecraft": "1.20.1", "java": ">=17" }
+}

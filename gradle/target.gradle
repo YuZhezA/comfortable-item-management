@@ -1,0 +1,55 @@
+def buildRoot = providers.environmentVariable('COMFORT_ITEMS_BUILD_DIR')
+if (buildRoot.isPresent()) layout.buildDirectory.set(file("${buildRoot.get()}/${"${loader}-${minecraftVersion}"}"))
+
+group = 'dev.comfortableitems'
+version = '0.1.0-dev'
+base { archivesName = rootProject.name }
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(targetJava)
+    withSourcesJar()
+}
+repositories { mavenCentral() }
+
+def variants = []
+if (minecraftVersion == '1.21.1') variants.add('../../versions/components')
+if (minecraftVersion in ['1.21.11', '26.3']) variants.add('../../versions/modern')
+if (minecraftVersion == '26.3') variants.add('../../versions/sdl')
+if (loader != 'fabric') variants.add("../../versions/${loader}")
+
+def sharedJava = file('../../src/main/java')
+def generatedJava = layout.buildDirectory.dir('generated/source/target')
+tasks.register('prepareSources', Sync) {
+    into generatedJava
+    variants.reverse().each { from(it) }
+    from(sharedJava) {
+        if (loader != 'fabric') exclude('**/FabricEntry.java')
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+sourceSets.main.java.srcDir(generatedJava)
+sourceSets.main.resources.srcDir('../../src/main/resources')
+tasks.named('compileJava').configure {
+    dependsOn 'prepareSources'
+    options.encoding = 'UTF-8'
+    options.release = targetJava
+}
+tasks.named('sourcesJar').configure { dependsOn 'prepareSources' }
+processResources {
+    inputs.property('version', project.version)
+    inputs.property('target', rootProject.name)
+    if (loader != 'fabric') exclude('fabric.mod.json')
+    filesMatching('fabric.mod.json') {
+        filter { it.replace('"1.20.1"', '"' + minecraftVersion + '"').replace('>=17', '>=' + targetJava)
+            .replace('>=0.16.14', '>=' + loaderVersion) }
+        expand version: project.version
+    }
+    filesMatching('comfortable_items.mixins.json') {
+        filter { line ->
+            def text = line.replace('JAVA_17', 'JAVA_' + Math.min(targetJava, 21))
+            if (minecraftVersion == '26.3') text = text.replace('"LocalPlayerMixin", ', '')
+            if (loader == 'forge' && text.contains('"required"')) text += '\n  "refmap": "comfortable_items.refmap.json",'
+            text
+        }
+    }
+}
+jar { manifest.attributes('Implementation-Version': project.version) }

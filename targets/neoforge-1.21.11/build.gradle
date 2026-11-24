@@ -1,0 +1,20 @@
+plugins {
+    id 'net.neoforged.moddev' version '2.0.147'
+}
+ext.loader = 'neoforge'
+ext.minecraftVersion = '1.21.11'
+ext.loaderVersion = '21.11.48'
+ext.targetJava = 21
+apply from: '../../gradle/target.gradle'
+neoForge {
+    version = project.ext.loaderVersion
+    runs {
+        client {
+            client()
+            programArguments.addAll('--username', 'ComfortQA')
+        }
+    }
+    mods {
+        comfortable_items { sourceSet(sourceSets.main) }
+    }
+}

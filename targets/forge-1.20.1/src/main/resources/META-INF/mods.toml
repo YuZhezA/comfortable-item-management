@@ -1,0 +1,15 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="All Rights Reserved"
+[[mods]]
+modId="comfortable_items"
+version="${file.jarVersion}"
+displayName="舒适物品管理"
+description="Client-side container management and inventory refill."
+displayTest="IGNORE_ALL_VERSION"
+[[dependencies.comfortable_items]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1]"
+ordering="NONE"
+side="CLIENT"

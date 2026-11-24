@@ -1,0 +1,19 @@
+plugins {
+    id 'fabric-loom' version '1.10.5'
+}
+ext.loader = 'fabric'
+ext.minecraftVersion = '1.21.1'
+ext.loaderVersion = '0.16.14'
+ext.targetJava = 21
+apply from: '../../gradle/target.gradle'
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraftVersion}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${loaderVersion}"
+}
+loom {
+    runs {
+        client { programArgs '--username', 'ComfortQA' }
+        remove server
+    }
+}

@@ -1,0 +1,27 @@
+plugins {
+    id 'net.neoforged.moddev.legacyforge' version '2.0.91'
+}
+ext.loader = 'forge'
+ext.minecraftVersion = '1.20.1'
+ext.loaderVersion = '47.4.29'
+ext.targetJava = 17
+apply from: '../../gradle/target.gradle'
+legacyForge {
+    version = "${project.ext.minecraftVersion}-${project.ext.loaderVersion}"
+    runs {
+        client {
+            client()
+            programArguments.addAll('--username', 'ComfortQA')
+        }
+    }
+    mods {
+        comfortable_items { sourceSet(sourceSets.main) }
+    }
+}
+
+mixin {
+    add sourceSets.main, 'comfortable_items.refmap.json'
+    config 'comfortable_items.mixins.json'
+}
+dependencies { annotationProcessor 'org.spongepowered:mixin:0.8.5:processor' }
+jar { manifest.attributes('MixinConfigs': 'comfortable_items.mixins.json') }
