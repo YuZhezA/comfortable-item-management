@@ -2,7 +2,7 @@
 
 Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、整理、批量丢弃和自动补充。使用原版容器点击和丢弃操作。Fabric 版只需要 Fabric Loader。
 
-当前产物版本为 `0.1.0-dev`。将与你的 Minecraft 版本及加载器完全对应的一个 JAR 放进客户端 `mods` 目录。逐档状态见[支持矩阵](docs/support.md)，安装包、加载器版本与核对方法见[实机验收记录](docs/playtest.md)。
+当前产物版本为 `0.1.0-dev`。将与你的 Minecraft 版本及加载器完全对应的一个 JAR 放进客户端 `mods` 目录。安装包、SHA-256 与证据 ZIP 在[私有发行页](https://github.com/YuZhezA/comfortable-item-management/releases/tag/v0.1.0-dev)。逐档状态见[支持矩阵](docs/support.md)，实际加载器版本与复验方法见[实机验收记录](docs/playtest.md)。
 
 ## 快捷键
 
@@ -32,7 +32,7 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 
 ## 配置
 
-首次启动生成 `config/comfortable-items.json`。在游戏退出后编辑，重启生效。仅整理键会出现在「按键绑定」的物品栏类别。游戏修改整理键时同时保存至 JSON，启动时读取 JSON。没有启用资源加载器的部分 Fabric 实例会以 `key.comfortable_items.sort` 显示这一行。`gestures` 各字段默认值见[快捷键表](#快捷键)及生成文件。字段值以 `+` 分隔，可置为 `OFF` 禁用对应操作。`DROP` 跟随游戏的丢弃键绑定。
+首次启动生成 `config/comfortable-items.json`。在游戏退出后编辑，重启生效。仅整理键会出现在「按键绑定」的物品栏类别。游戏修改整理键时同时保存至 JSON，启动时读取 JSON。没有启用资源加载器的部分 Fabric 实例会以 `key.comfortable_items.sort` 显示这一行。`gestures` 各字段及默认值如下。可置为 `OFF` 禁用对应操作。`DROP` 跟随游戏的丢弃键绑定。修改时保留末尾的 `LEFT`、`RIGHT`、`WHEEL`、`DROP` 或 `CLICK` 事件类型，并使用 `+` 连接修饰键。
 
 | 字段 | 默认值与含义 |
 | --- | --- |
@@ -51,6 +51,19 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 | `refillEquipment` / `refillTools` | `ID`，另有 `OFF`、`TYPE`、`STRICT` |
 | `replaceEquipment` / `replaceTools` | `OFF`，也可以设为 `TYPE`、`ID`、`STRICT` |
 
+| `gestures` 字段 | 默认值 |
+| --- | --- |
+| `moveAll` / `moveMatching` | `ALT+SHIFT+LEFT` / `ALT+SHIFT+RIGHT` |
+| `moveAllWithHotbar` / `moveMatchingWithHotbar` | `ALT+SHIFT+CTRL+LEFT` / `ALT+SHIFT+CTRL+RIGHT` |
+| `scrollOne` / `scrollStack` / `scrollMatching` / `scrollAll` | `WHEEL` / `SHIFT+WHEEL` / `ALT+WHEEL` / `ALT+SHIFT+WHEEL` |
+| `dragStacks` / `dragLeaveOne` / `dragOne` / `dragMatching` | `SHIFT+LEFT` / `SHIFT+RIGHT` / `CTRL+LEFT` / `ALT+LEFT` |
+| `placeMatching` | `SHIFT+LEFT`，在持物点空槽时生效 |
+| `dragDropOne` / `dragDropStacks` / `dragDropLeaveOne` | `DROP+LEFT` / `SHIFT+DROP+LEFT` / `SHIFT+DROP+RIGHT` |
+| `dropStack` / `dropMatching` | `SHIFT+DROP` / `ALT+DROP` |
+| `dropAll` / `dropAllWithHotbar` / `upstreamDropMatching` | `ALT+SHIFT+DROP` / `ALT+SHIFT+CTRL+DROP` / `CTRL+SHIFT+DROP` |
+| `outsideMatchingAlt` / `outsideMatchingShift` | `ALT+CLICK` / `SHIFT+CLICK` |
+| `outsideAll` / `outsideAllWithHotbar` | `ALT+SHIFT+CLICK` / `ALT+SHIFT+CTRL+CLICK` |
+
 启用损坏前替换时，原件低于 10 点且有至少剩余 10 点的备件才互换。装备和工具严格补充比较除当前损耗以外的数据。护甲按穿戴槽筛选，盾牌作装备，火把和图腾作普通物品。可选的 Configured 设置界面尚未接入。JSON 可独立使用。
 
 ## 构建与测试
@@ -59,7 +72,7 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 - **Forge 1.20.1、Fabric 1.21.1、NeoForge 1.21.1、NeoForge 1.21.11** 用对应版本的 JDK，运行 `./gradlew -p targets/<加载器>-<Minecraft 版本> build`。1.20.1 用 JDK 17，1.21.x 用 JDK 21。
 - **Fabric 1.21.11、Fabric 26.3、NeoForge 26.3** 用 Gradle 9.7.0，运行 `gradle -p targets/<加载器>-<Minecraft 版本> build`。1.21.11 用 JDK 21，26.3 用 JDK 25。
 - 产物在各项目的 `build/libs/`。设置环境变量 `COMFORT_ITEMS_BUILD_DIR` 可将构建输出写至其他目录，避免缓存和产物占用工作区磁盘。
-- **2026-11-24 的前一轮构建**在副屏干净安装实例中逐个通过八档的 28 项原版服务端库存断言。图腾和 Shift 放置补齐后的安装包正在复验。涵盖双向批量转移、匹配筛选、快捷栏范围、Alt 滚轮、满箱、空槽整理、常见容器和世界丢弃、主手和副手补充、手动副手交换及工具损坏后补充。扩展和共存结果见[实机验收记录](docs/playtest.md)及[共存矩阵](docs/coexistence.md)。
+- **2026-11-24** 八个重点组合逐个构建。在副屏上的干净客户端连接同版 Mojang 原版专用服务端，每档通过 31 项核心断言和 22 项扩展断言。七个可安装上游的组合各通过 6 项共存断言。实际加载器版本、场景和证据见[实机验收记录](docs/playtest.md)及[共存矩阵](docs/coexistence.md)。
 
 ## 参考与许可
 
@@ -70,16 +83,10 @@ Minecraft Java 客户端模组。提供容器转移、鼠标滚动和拖拽、�
 - [Stack Refill](https://github.com/Serilum/Stack-Refill/tree/eb22387)
 - [Configured](https://github.com/MrCrayfish/Configured/tree/9f78baf)
 
-开发过程中的安装 JAR 验证使用 `tools/launch-fixture.py` 和 `tools/play-fixture.py`。游戏服务端使用 Mojang 原版 JAR，测试数据和凭据分别保存在隔离实例中。首次并行构建受工作区盘空间影响，设置 COMFORT_ITEMS_BUILD_DIR 可选择其他生成目录。
+## 首发改动
 
-本次改动处理了上游整理绑定冲突、离线测试身份、NeoForge 启动类路径重复。测试工具使用独立实例与本地原版服务端。
+- 实现容器与背包批量转移、拖动、丢弃和整理。持物 Shift 放置只向能完整容纳光标堆叠的普通空槽执行。排序和合并遵循原版堆叠限制，保留潜影盒和收纳袋数据。
+- 接入原版整理键绑定和 JSON 持久化。与上游共存时保留其默认手势与实际整理键。
+- 新增普通物品、工具和装备补充，以及可选的低耐久互换。扩展轮次覆盖严格数据匹配、四护甲槽及耐久边界。
 
-Forge 1.20.1 加入 `pack.mcmeta`，修复安装 JAR 启动时的资源包元数据警告。测试脚本增加多人服耐久与共存检查。
-
-整理补齐按物品类别、数量、稀有度、内部注册序号的排序组合和分类顺序。容器内使用原版可堆叠规则整理，保留潜影盒和收纳袋中的原数据。
-
-扩展用例使用真实按键绑定界面验证配置持久化，并检查严格匹配、拖动、丢弃单次触发和耐久边界。测试工具使用 Python、Pillow，画面识别另需 NumPy 与 OpenCV。它们只用于开发验收。
-
-补齐上游持物 Shift 放置功能。仅向可完整放入持物的普通空槽执行，使用原版堆叠和槽位限制。
-
-图腾按普通物品补充设置处理。收到本地玩家的原版图腾保护事件后，按主手、副手的顺序识别实际消耗的图腾。该场景正在按八档新构建复验。
+图腾按普通物品补充设置处理。收到本地玩家的原版图腾保护事件后，按主手、副手的顺序识别实际消耗的图腾。八档已通过副手保护补充及双持时主手优先的原版服务端场景。

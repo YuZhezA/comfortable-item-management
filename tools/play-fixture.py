@@ -301,9 +301,14 @@ def test_durability():
 
 def test_coexistence():
     fixture(player('inventory.0','stone',8),player('inventory.1','dirt',7),player('hotbar.0','diamond',2))
-    ui.mouse(1)
-    time.sleep(.45)
-    if not ui.inventory_panel(): raise RuntimeError('Coexistence chest did not open')
+    for _ in range(3):
+        if ui.inventory_panel():
+            break
+        ui.mouse(1)
+        time.sleep(.75)
+    if not ui.inventory_panel():
+        ui.capture('failed-coexistence-chest')
+        raise RuntimeError('Coexistence chest did not open')
     scroll(BAG,True)
     evidence('Shared plain wheel transfers one item exactly once',
              [state(9,'stone',7),state(10,'dirt',7),state(0,'diamond',2)],[state(0,'stone',1)])
@@ -343,6 +348,9 @@ with rcon.Rcon() as server:
     player_list = server.send('list')
     if 'ComfortQA' not in player_list: raise RuntimeError('Test client has not joined the vanilla server')
     server.send('gamerule doMobSpawning false')
+    # A trader persisted by the fixture server can intercept the chest interaction.
+    for entity in ('wandering_trader', 'trader_llama'):
+        server.send(f'execute positioned 0 -60 2 run kill @e[type=minecraft:{entity},distance=..16]')
     server.send('kill @e[type=item]')
     server.send('setblock 0 -60 1 air')
     server.send('setblock 0 -60 2 air')
