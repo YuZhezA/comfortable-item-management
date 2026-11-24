@@ -5,6 +5,7 @@ import dev.comfortableitems.mixin.ContainerAccess;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerInput;
 
@@ -26,6 +27,10 @@ public final class ClientPlatform {
 
     static void click(Minecraft client, int menu, int slot, int button, InventoryActions.Click action) {
         client.gameMode.handleContainerInput(menu, slot, button, ContainerInput.valueOf(action.name()), client.player);
+    }
+
+    static void creativeClick(CreativeModeInventoryScreen screen, int slot, int button, InventoryActions.Click action) {
+        ((ContainerAccess) screen).comfortableItems$click(screen.getMenu().getSlot(slot), slot, button, ContainerInput.valueOf(action.name()));
     }
 
     public static int modifiers(Minecraft client) {

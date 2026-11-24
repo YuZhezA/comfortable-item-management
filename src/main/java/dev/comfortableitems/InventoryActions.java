@@ -1,7 +1,16 @@
 package dev.comfortableitems;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.CraftingMenu;
+import net.minecraft.world.inventory.DispenserMenu;
+import net.minecraft.world.inventory.HopperMenu;
+import net.minecraft.world.inventory.HorseInventoryMenu;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.inventory.ShulkerBoxMenu;
+import net.minecraft.world.inventory.ShulkerBoxSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Inventory;
@@ -36,9 +45,12 @@ final class InventoryActions {
     }
 
     boolean ordinary(Slot slot) {
-        // Specialized slots can have side effects or only accept a subset of items.
-        return slot != null && slot.isActive() && slot.getClass() == Slot.class
-            && (!playerSide(slot) || slot.getContainerSlot() < Inventory.INVENTORY_SIZE);
+        if (slot == null || !slot.isActive()) return false;
+        if (playerSide(slot)) return slot.getContainerSlot() < Inventory.INVENTORY_SIZE;
+        // A plain Slot can be a crafting, trading or processing input. Identify the menu first.
+        if (menu instanceof ShulkerBoxMenu) return slot instanceof ShulkerBoxSlot;
+        return slot.getClass() == Slot.class && (menu instanceof ChestMenu || menu instanceof HopperMenu
+            || menu instanceof DispenserMenu || menu instanceof HorseInventoryMenu);
     }
 
     List<Slot> side(boolean player, boolean hotbar) {
@@ -50,8 +62,30 @@ final class InventoryActions {
         return result;
     }
 
+    boolean creativeInventory() {
+        return ClientPlatform.screen(client) instanceof CreativeModeInventoryScreen;
+    }
+
+    boolean hasPersonalDragSides() {
+        return menu instanceof InventoryMenu || menu instanceof CraftingMenu;
+    }
+
+    boolean hotbar(Slot slot) {
+        return playerSide(slot) && slot.getContainerSlot() < 9;
+    }
+
+    List<Slot> dragSide(Slot slot, boolean opposite) {
+        if (!hasPersonalDragSides()) return side(playerSide(slot) != opposite, true);
+        boolean hotbar = hotbar(slot) != opposite;
+        return side(true, true).stream().filter(candidate -> hotbar(candidate) == hotbar).toList();
+    }
+
     void click(int index, int button, Click action) {
-        ClientPlatform.click(client, menu.containerId, index, button, action);
+        if (ClientPlatform.screen(client) instanceof CreativeModeInventoryScreen creative) {
+            ClientPlatform.creativeClick(creative, index, button, action);
+        } else {
+            ClientPlatform.click(client, menu.containerId, index, button, action);
+        }
     }
 
     void transfer(List<Slot> source, List<Slot> target, Predicate<ItemStack> match, int maximum) {

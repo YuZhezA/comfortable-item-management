@@ -83,6 +83,7 @@ def evidence(name, player_want, chest_want, player_exclude=(), chest_exclude=(),
         'Alt+Shift+left stashes backpack and preserves hotbar': 'after-stash',
         'Full chest preserves remainder': 'full-chest-remainder',
         'Sort hovered empty container slot and merge stacks': 'after-sort',
+        'Shared Shift drag moves both stacks without duplicating items': 'shared-shift-drag',
         'Container filtered drop includes hotbar with Ctrl': 'after-filtered-drop',
         'Placing last main-hand block refills from backpack': 'main-hand-refilled',
         'Last off-hand torch refills with seven spare torches': 'off-hand-refilled',
@@ -312,6 +313,19 @@ def test_coexistence():
     scroll(BAG,True)
     evidence('Shared plain wheel transfers one item exactly once',
              [state(9,'stone',7),state(10,'dirt',7),state(0,'diamond',2)],[state(0,'stone',1)])
+    fixture(player('inventory.0','stone',4),player('inventory.1','dirt',5))
+    ui.move(*BAG)
+    ui.key(SHIFT)
+    ui.u.mouse_event(2,0,0,0,0)
+    try:
+        time.sleep(.15)
+        for offset in (12, 24, 32, 35, 37):
+            ui.move(BAG[0]+offset,BAG[1])
+    finally:
+        ui.u.mouse_event(4,0,0,0,0)
+        ui.key(SHIFT,True)
+    evidence('Shared Shift drag moves both stacks without duplicating items',
+             [],[state(0,'stone',4),state(1,'dirt',5)],['minecraft:stone','minecraft:dirt'])
     fixture(player('inventory.0','stone',8),player('inventory.1','dirt',7),player('hotbar.0','diamond',2))
     button(BAG, ALT, SHIFT)
     evidence('Shared Alt+Shift click reaches upstream and includes the hotbar', [],

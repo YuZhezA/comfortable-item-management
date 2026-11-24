@@ -3,6 +3,8 @@ package dev.comfortableitems;
 import dev.comfortableitems.mixin.ContainerAccess;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -25,6 +27,7 @@ public final class ClientActions {
     private static String dragAction;
     private static int dragButton = -1;
     private static AbstractContainerScreen<?> dragScreen;
+    private static boolean dragFromHotbar;
     private static final Set<Integer> visited = new HashSet<>();
 
     private record Hover(AbstractContainerScreen<?> screen, Slot slot, double x, double y) {
@@ -35,8 +38,12 @@ public final class ClientActions {
     }
 
     private static InventoryActions actions(Minecraft client) {
-        if (client.player == null || client.gameMode == null || client.player.isCreative() || client.player.isSpectator()) return null;
-        if (ClientPlatform.screen(client) != null && !(ClientPlatform.screen(client) instanceof AbstractContainerScreen<?>)) return null;
+        if (client.player == null || client.gameMode == null || client.player.isSpectator()) return null;
+        Screen screen = ClientPlatform.screen(client);
+        if (screen instanceof CreativeModeInventoryScreen creative) {
+            return creative.isInventoryOpen() ? new InventoryActions(client, client.player.inventoryMenu) : null;
+        }
+        if (screen == null ? client.player.isCreative() : !(screen instanceof AbstractContainerScreen<?>)) return null;
         return new InventoryActions(client, client.player.containerMenu);
     }
 
@@ -45,7 +52,14 @@ public final class ClientActions {
         if (screen.getMenu() != client.player.containerMenu) return null;
         double x = rawX * client.getWindow().getGuiScaledWidth() / client.getWindow().getScreenWidth();
         double y = rawY * client.getWindow().getGuiScaledHeight() / client.getWindow().getScreenHeight();
-        return new Hover(screen, ((ContainerAccess) screen).comfortableItems$slotAt(x, y), x, y);
+        Slot slot = ((ContainerAccess) screen).comfortableItems$slotAt(x, y);
+        if (screen instanceof CreativeModeInventoryScreen) {
+            // The personal tab wraps inventoryMenu slots in the same order, followed by the trash slot.
+            int index = screen.getMenu().slots.indexOf(slot);
+            slot = index >= 0 && index < client.player.inventoryMenu.slots.size()
+                ? client.player.inventoryMenu.getSlot(index) : null;
+        }
+        return new Hover(screen, slot, x, y);
     }
 
     private static String chord(int modifiers, boolean drop, String trigger) {
@@ -68,7 +82,7 @@ public final class ClientActions {
         if (drop) dropHeld = event != ClientPlatform.RELEASE;
         if (event == ClientPlatform.RELEASE || !Settings.current.enabled) return false;
         InventoryActions actions = actions(client);
-        if (actions == null) return false;
+        if (actions == null || actions.creativeInventory()) return false;
         Hover hover = hover(client, client.mouseHandler.xpos(), client.mouseHandler.ypos());
         if (drop) return dropKey(actions, hover, event, modifiers);
         if (hover != null && !dropHeld && modifiers == 0 && sort
@@ -142,6 +156,9 @@ public final class ClientActions {
         InventoryActions actions = actions(client);
         if (actions == null || !Settings.current.enabled) return false;
         Hover hover = hover(client, client.mouseHandler.xpos(), client.mouseHandler.ypos());
+        if (actions.creativeInventory()) {
+            return hover != null && startDrag(actions, hover, button, modifiers);
+        }
         if (drop && dropKey(actions, hover, event, modifiers)) return true;
         if (hover == null) return false;
         if (modifiers == 0 && sort && Settings.current.sortEnabled && actions.ordinary(hover.slot)) {
@@ -174,20 +191,32 @@ public final class ClientActions {
         }
         if (!(actions.ordinary(hover.slot) && actions.menu.getCarried().isEmpty())) return false;
         String chord = chord(modifiers, dropHeld, button == 0 ? "LEFT" : "RIGHT");
-        String operation = action(chord, "moveAllWithHotbar", "moveMatchingWithHotbar", "moveAll", "moveMatching",
-            "dragStacks", "dragLeaveOne", "dragOne", "dragMatching", "dragDropStacks", "dragDropLeaveOne", "dragDropOne");
-        if (operation.isEmpty()) return false;
+        String operation = action(chord, "moveAllWithHotbar", "moveMatchingWithHotbar", "moveAll", "moveMatching");
+        if (operation.isEmpty()) return startDrag(actions, hover, button, modifiers);
         holdMouse(operation, button, hover.screen);
-        if (operation.startsWith("drag")) {
-            drag(actions, hover.slot, operation);
-        } else {
-            boolean sourcePlayer = actions.playerSide(hover.slot);
-            boolean includeHotbar = operation.endsWith("WithHotbar");
-            List<Slot> target = actions.side(!sourcePlayer, includeHotbar);
-            List<ItemStack> filter = operation.startsWith("moveMatching") ? actions.sample(target) : List.of();
-            actions.transfer(actions.side(sourcePlayer, includeHotbar), target,
-                stack -> operation.startsWith("moveAll") || filter.stream().anyMatch(item -> InventoryActions.exact(stack, item)), Integer.MAX_VALUE);
+        boolean sourcePlayer = actions.playerSide(hover.slot);
+        boolean includeHotbar = operation.endsWith("WithHotbar");
+        List<Slot> target = actions.side(!sourcePlayer, includeHotbar);
+        List<ItemStack> filter = operation.startsWith("moveMatching") ? actions.sample(target) : List.of();
+        actions.transfer(actions.side(sourcePlayer, includeHotbar), target,
+            stack -> operation.startsWith("moveAll") || filter.stream().anyMatch(item -> InventoryActions.exact(stack, item)), Integer.MAX_VALUE);
+        return true;
+    }
+
+    private static boolean startDrag(InventoryActions actions, Hover hover, int button, int modifiers) {
+        if ((button != 0 && button != 1) || !actions.ordinary(hover.slot) || !actions.menu.getCarried().isEmpty()) return false;
+        String chord = chord(modifiers, dropHeld, button == 0 ? "LEFT" : "RIGHT");
+        String operation = action(chord, "dragStacks", "dragLeaveOne", "dragOne", "dragMatching",
+            "dragDropStacks", "dragDropLeaveOne", "dragDropOne");
+        if (operation.isEmpty()) return false;
+        if (operation.startsWith("dragDrop")) {
+            if (actions.creativeInventory()) return false;
+        } else if (actions.dragSide(hover.slot, true).isEmpty()) {
+            return false;
         }
+        holdMouse(operation, button, hover.screen);
+        dragFromHotbar = actions.hotbar(hover.slot);
+        drag(actions, hover.slot, operation);
         return true;
     }
 
@@ -216,7 +245,10 @@ public final class ClientActions {
         Hover hover = actions == null ? null : hover(client, x, y);
         if (hover == null || !chord(ClientPlatform.modifiers(client), dropHeld, dragButton == 0 ? "LEFT" : "RIGHT")
             .equalsIgnoreCase(Settings.current.gestures.get(dragAction))) return;
-        if (actions.ordinary(hover.slot)) drag(actions, hover.slot, dragAction);
+        if (actions.ordinary(hover.slot)
+            && (!actions.hasPersonalDragSides() || dragAction.startsWith("dragDrop") || actions.hotbar(hover.slot) == dragFromHotbar)) {
+            drag(actions, hover.slot, dragAction);
+        }
     }
 
     private static void drag(InventoryActions actions, Slot slot, String operation) {
@@ -230,11 +262,10 @@ public final class ClientActions {
             actions.drop(slot, count);
             return;
         }
-        boolean player = actions.playerSide(slot);
-        List<Slot> opposite = actions.side(!player, true);
+        List<Slot> opposite = actions.dragSide(slot, true);
         if (operation.equals("dragMatching")) {
             ItemStack sample = slot.getItem().copy();
-            actions.transfer(actions.side(player, true), opposite, item -> InventoryActions.exact(item, sample), Integer.MAX_VALUE);
+            actions.transfer(actions.dragSide(slot, false), opposite, item -> InventoryActions.exact(item, sample), Integer.MAX_VALUE);
         } else {
             int count = switch (operation) {
                 case "dragOne" -> 1;
@@ -248,7 +279,7 @@ public final class ClientActions {
     public static boolean scroll(Minecraft client, double delta) {
         if (delta == 0 || !Settings.current.enabled) return false;
         InventoryActions actions = actions(client);
-        if (actions == null || !actions.menu.getCarried().isEmpty()) return false;
+        if (actions == null || actions.creativeInventory() || !actions.menu.getCarried().isEmpty()) return false;
         Hover hover = hover(client, client.mouseHandler.xpos(), client.mouseHandler.ypos());
         if (hover == null || !actions.ordinary(hover.slot)) return false;
         String operation = action(chord(ClientPlatform.modifiers(client), dropHeld, "WHEEL"), "scrollOne", "scrollStack", "scrollMatching", "scrollAll");

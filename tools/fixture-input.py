@@ -27,11 +27,20 @@ def collect(hwnd, extra):
 u.EnumWindows(collect,0)
 if len(handles)!=1: raise RuntimeError(f'Expected one verified Minecraft window, found {len(handles)}')
 hwnd=handles[0]
-if u.GetForegroundWindow()!=hwnd:
-    u.keybd_event(0x12,0,0,0); u.keybd_event(0x12,0,2,0)
-    u.SetForegroundWindow(hwnd)
-    time.sleep(.4)
-if u.GetForegroundWindow()!=hwnd: raise RuntimeError('Minecraft test window did not take focus')
+def ensure_focus():
+    if u.GetForegroundWindow() == hwnd:
+        return
+    for _ in range(3):
+        u.keybd_event(0x12, 0, 0, 0)
+        u.keybd_event(0x12, 0, 2, 0)
+        u.SetForegroundWindow(hwnd)
+        time.sleep(.3)
+        if u.GetForegroundWindow() == hwnd:
+            return
+    raise RuntimeError('Minecraft test window did not take focus')
+
+
+ensure_focus()
 r=w.RECT()
 u.GetClientRect(hwnd,c.byref(r))
 point=w.POINT(0,0);u.ClientToScreen(hwnd,c.byref(point))
@@ -39,15 +48,18 @@ if (r.right,r.bottom)!=(984,751) or point.x>=0:
     raise RuntimeError(f'Unexpected test client rectangle {(point.x,point.y,r.right,r.bottom)}')
 
 def move(x,y):
+    ensure_focus()
     u.SetCursorPos(point.x+round(float(x)),point.y+round(float(y)))
     time.sleep(.14)
 
 def mouse(button=0):
+    ensure_focus()
     down,up=[(2,4),(8,16)][button]
     u.mouse_event(down,0,0,0,0); time.sleep(.08); u.mouse_event(up,0,0,0,0)
     time.sleep(.18)
 
 def key(k,release=False):
+    ensure_focus()
     u.keybd_event(k,0,2 if release else 0,0)
     time.sleep(.06)
 

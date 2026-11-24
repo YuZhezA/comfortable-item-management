@@ -1,5 +1,26 @@
 # 实机验收记录
 
+## 0.1.1-dev
+
+2026-11-24 在 Windows 副屏 `DISPLAY2` 运行。八个客户端实例的 `mods` 目录各只有对应的待发布 JAR，均连接同版本的 Mojang 原版专用服务端。断言读取服务端认可的物品种类、堆叠数量和槽位，并保存客户端截图。
+
+| 加载器与游戏版本 | 构建加载器 | 实机加载器 | JDK | 拖拽回归 | 核心测试 | 扩展测试 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Forge 1.20.1 | 47.4.29 | 47.4.23 | 17 | 12/12 | 31/31 | 22/22 |
+| NeoForge 1.21.1 | 21.1.264 | 21.1.265 | 21 | 12/12 | 31/31 | 22/22 |
+| NeoForge 1.21.11 | 21.11.48 | 21.11.48 | 21 | 12/12 | 31/31 | 22/22 |
+| NeoForge 26.3 | 26.3.0.117 | 26.3.0.115 | 25 | 12/12 | 31/31 | 22/22 |
+| Fabric 1.20.1 | 0.16.14 | 0.19.5 | 17 | 12/12 | 31/31 | 22/22 |
+| Fabric 1.21.1 | 0.16.14 | 0.19.5 | 21 | 12/12 | 31/31 | 22/22 |
+| Fabric 1.21.11 | 0.18.4 | 0.18.4 | 21 | 12/12 | 31/31 | 22/22 |
+| Fabric 26.3 | 0.19.5 | 0.19.5 | 25 | 12/12 | 31/31 | 22/22 |
+
+拖拽回归覆盖生存背包与工作台的双向转移、快捷栏满时保留原槽、创造物品栏个人背包页的双向转移、创造模式的工作台和箱子、潜影盒双向转移与原版嵌套限制。Fabric 1.21.11 与 Fabric 26.3 在窗口焦点或测试场地掉落物影响输入和库存后，用同一 JAR 在隔离客户端重跑。扩展测试覆盖 JSON 和原版按键界面改键、预损替换耐久边界、护甲四槽、附魔和丢弃行为。七档通过 7 个共存场景，NeoForge 26.3 暂无可测的上游发行。详见[共存记录](coexistence.md)。
+
+八个重新构建的 JAR 均逐条目比对过类文件和资源内容。发布使用实测 JAR 原件，保留原 SHA-256。构建源码提交、实测 JAR 哈希与逐项证据见[本次发行](https://github.com/YuZhezA/comfortable-item-management/releases/tag/v0.1.1-dev)中的 `qa-evidence.zip` 与 `SHA256SUMS.txt`。
+
+## 0.1.0-dev
+
 2026-11-24，Windows，副屏 `DISPLAY2`。测试窗口客户区为 `(-1792, 116, 984, 751)`。每次建立干净客户端实例，从 `mods` 目录加载待交付 JAR。核心测试的 `mods` 清单每次只有本模组。四个原版专用服务端分别使用对应版本的 Mojang 服务端 JAR，在本机回环网络接受测试连接。
 
 | 加载器与游戏版本 | 构建加载器 | 实机加载器 | JDK | 核心测试 | 扩展测试 |
@@ -35,4 +56,4 @@
 
 - 使用 `tools/launch-fixture.py <组合> <安装 JAR> <新实例路径> --mc-dir <启动器缓存>`。脚本需要对应加载器的启动配置、原版资源及同主版本 JDK。`PROFILES` 记录本次使用的启动器配置名。Windows 副屏坐标由 `launch-fixture.py` 与 `fixture-input.py` 共同校验，移动到其他电脑后要按实际屏幕定位。
 - 同版原版服务端监听回环地址。准备名为 `ComfortQA` 的生存测试玩家，主持测试者在独立的本地服务端开启 RCON，把 `COMFORT_QA_SERVER` 设为对应服务端目录，`COMFORT_QA_INSTANCE` 设为待测客户端目录。端口见 `tools/launch-fixture.py`。RCON 用于准备夹具和读回结果。
-- 执行 `python tools/play-fixture.py`。扩展轮次启动时传入 `--boot-config '{"replaceTools":"STRICT","replaceEquipment":"STRICT","sortKey":"key.keyboard.j"}'`，再执行 `python tools/play-fixture.py --extended`。共存轮次重新启动干净实例，每个上游安装包通过一个 `--with-mod` 参数加入，运行 `python tools/play-fixture.py --coexist`。需要 Python、Pillow，扩展轮次的按钮定位另需 NumPy 和 OpenCV。每轮串行输入，退出该客户端以后再启动下一轮。
+- 执行 `python tools/play-drag-regression.py` 验证拖拽，运行 `python tools/play-fixture.py` 验证核心操作。扩展轮次启动时传入 `--boot-config '{"replaceTools":"STRICT","replaceEquipment":"STRICT","sortKey":"key.keyboard.j"}'`，再执行 `python tools/play-fixture.py --extended`。共存轮次重新启动干净实例，每个上游安装包通过一个 `--with-mod` 参数加入，运行 `python tools/play-fixture.py --coexist`。需要 Python、Pillow，扩展轮次的按钮定位另需 NumPy 和 OpenCV。每轮串行输入，退出该客户端以后再启动下一轮。
