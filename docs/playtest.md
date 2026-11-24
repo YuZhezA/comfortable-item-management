@@ -20,7 +20,7 @@
 - [共存矩阵](coexistence.md)记录上游构件来源与实测结果。只有共存实例包含上游模组和其依赖。NeoForge 1.21.11 的一次共存场景被流浪商人挡住箱子，截图定位后在夹具中清理场地，再以同一个 JAR 重跑。
 - 每个安装产物与测试实例的 SHA-256 逐一核对。`launch.json` 记录运行配置、实际加载器版本与装入的 JAR 哈希。`mod-config.json` 记录干净实例的默认配置与扩展轮次改键结果。`playtest.json` 记录输入、预期及原版认可的状态。`manifest.json` 汇总构建、客户端、用例和状态，并记录构建源码提交及发布文档提交。
 
-安装 JAR 来自源码提交 `bdaf05c`。各包的 SHA-256 及截图、日志和逐项原版服务端读取详见[私有发行页](https://github.com/YuZhezA/comfortable-item-management/releases/tag/v0.1.0-dev)中的 `SHA256SUMS.txt` 和 `qa-evidence.zip`。
+安装 JAR 来自源码提交 `bdaf05c`。各包的 SHA-256 及截图、日志和逐项原版服务端读取详见[Releases](https://github.com/YuZhezA/comfortable-item-management/releases/tag/v0.1.0-dev)中的 `SHA256SUMS.txt` 和 `qa-evidence.zip`。
 
 ## 原版服务端 JAR SHA-1
 
