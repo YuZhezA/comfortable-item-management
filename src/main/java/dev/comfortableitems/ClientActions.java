@@ -9,6 +9,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -17,6 +18,9 @@ public final class ClientActions {
         "CTRL+LEFT", "ALT+LEFT", "SHIFT+DROP+LEFT", "SHIFT+DROP+RIGHT", "DROP+LEFT", "WHEEL", "SHIFT+WHEEL",
         "ALT+WHEEL", "ALT+SHIFT+WHEEL", "SHIFT+CLICK", "CTRL+SHIFT+DROP");
     static boolean upstream;
+    private static Object upstreamSort;
+    private static java.lang.reflect.Method upstreamSortKeys;
+    private static boolean lookedUpUpstreamSort;
     private static boolean dropHeld;
     private static String dragAction;
     private static int dragButton = -1;
@@ -69,6 +73,7 @@ public final class ClientActions {
         if (drop) return dropKey(actions, hover, event, modifiers);
         if (hover != null && !dropHeld && modifiers == 0 && sort
             && actions.ordinary(hover.slot)) {
+            if (upstreamOwnsSort()) return false;
             if (event == ClientPlatform.PRESS) actions.sort(actions.side(actions.playerSide(hover.slot), false));
             return true;
         }
@@ -76,6 +81,30 @@ public final class ClientActions {
             Refill.forgetUse();
         }
         return false;
+    }
+
+    private static boolean upstreamOwnsSort() {
+        if (!upstream) return false;
+        try {
+            if (!lookedUpUpstreamSort) {
+                lookedUpUpstreamSort = true;
+                Class<?> hotkeys = Class.forName("fi.dy.masa.itemscroller.config.Hotkeys");
+                upstreamSort = hotkeys.getField("SORT_INVENTORY").get(null);
+                upstreamSortKeys = upstreamSort.getClass().getMethod("getStringValue");
+            }
+            if (upstreamSortKeys == null) return false;
+            String key = (String) upstreamSortKeys.invoke(upstreamSort);
+            if (key.isBlank() || key.contains(",")) return false;
+            String name = key.toLowerCase(Locale.ROOT);
+            if (name.startsWith("key.")) return name.equals(Settings.SORT.saveString());
+            if (name.startsWith("mouse_") || name.startsWith("button_")) {
+                return Settings.SORT.saveString().equals("key.mouse." + name.substring(name.lastIndexOf('_') + 1));
+            }
+            return Settings.SORT.saveString().equals("key.keyboard." + name.replace('_', '.'));
+        } catch (ReflectiveOperationException | LinkageError error) {
+            upstreamSortKeys = null;
+            return false;
+        }
     }
 
     private static boolean dropKey(InventoryActions actions, Hover hover, int event, int modifiers) {
@@ -116,6 +145,7 @@ public final class ClientActions {
         if (drop && dropKey(actions, hover, event, modifiers)) return true;
         if (hover == null) return false;
         if (modifiers == 0 && sort && actions.ordinary(hover.slot)) {
+            if (upstreamOwnsSort()) return false;
             actions.sort(actions.side(actions.playerSide(hover.slot), false));
             return true;
         }

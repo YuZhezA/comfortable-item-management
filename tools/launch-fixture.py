@@ -77,6 +77,7 @@ def launch(target, jar, mc_dir, instance, extra_mods, loopback_port, boot_overri
     game_jar=game_profile/(game_profile.name+'.jar')
     if not game_jar.is_file(): raise FileNotFoundError(game_jar)
     classpath.append(str(game_jar))
+    classpath = list(dict.fromkeys(classpath))
     instance.mkdir(parents=True)
     mods=instance/'mods'
     mods.mkdir()
@@ -93,12 +94,17 @@ def launch(target, jar, mc_dir, instance, extra_mods, loopback_port, boot_overri
     values = {'natives_directory':str(instance/'natives'), 'launcher_name':'ComfortableItemsQA', 'launcher_version':'1',
               'classpath':os.pathsep.join(classpath),'library_directory':str(library_root),'classpath_separator':os.pathsep,
               'auth_player_name':'ComfortQA','version_name':basename,'game_directory':str(instance),'assets_root':str(assets or mc_dir/'assets'),
-              'assets_index_name':data['assetIndex']['id'],'auth_uuid':'cf54ba87-5160-4378-b831-d091dbc4f7282',
+              'assets_index_name':data['assetIndex']['id'],'auth_uuid':'cf54ba8751604378b831d091dbc4f7282' if game=='1.21.1' else 'cf54ba87-5160-4378-b831-d091dbc4f7282',
               'auth_access_token':'0','clientid':'','auth_xuid':'','user_type':'legacy','version_type':'release'}
     def interpolate(text):
         return re.sub(r'\$\{([^}]+)\}',lambda match:values[match[1]],text)
+    game_args = list(map(interpolate, flatten(data['arguments']['game'])))
+    for option in ('--uuid', '--clientId', '--xuid'):
+        if option in game_args:
+            index = game_args.index(option)
+            del game_args[index:index + 2]
     args=['-Xmx1200M','-Dfile.encoding=UTF-8',*map(interpolate,flatten(data['arguments']['jvm'])),data['mainClass'],
-          *map(interpolate,flatten(data['arguments']['game'])),'--width','984','--height','751','--quickPlayMultiplayer',f'127.0.0.1:{loopback_port}']
+          *game_args,'--width','984','--height','751','--quickPlayMultiplayer',f'127.0.0.1:{loopback_port}']
     arg_path=instance/'launch.args'
     arg_path.write_text(''.join('"'+arg.replace('\\','/').replace('"','\\"')+'"\n' for arg in args),encoding='utf-8')
     log_path=instance/'console.log'
