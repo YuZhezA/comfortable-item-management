@@ -1,5 +1,9 @@
 # 实机验收记录
 
+## 0.1.4
+
+八个重点组合在副屏使用真实客户端连接同版原版专用服务端，每档通过 32 项单击与拖拽、31 项核心和 22 项扩展检查。七档各通过 7 项上游共存检查。[单击与拖拽验收](shift-click.md)记录新增场景、实际加载器和证据。
+
 ## 0.1.3
 
 2026-11-24 在 Windows 副屏 `DISPLAY2` 逐档验证发布 JAR。八个客户端各自只装本模组并连接同版 Mojang 原版专用服务端，每档通过 31 项核心用例。覆盖批量转移、快捷栏范围、满箱余量、整理空槽、丢弃、主手和副手补充，并用服务端的实际物品数据确认结果。每档另通过 24 项持续拖拽和 22 项扩展用例。扩展用例包括四护甲槽、副手盾牌和工具、耐久边界、JSON 键位、严格丢弃和按住丢弃键只执行一轮。
@@ -87,4 +91,4 @@
 
 - 使用 `tools/launch-fixture.py <组合> <安装 JAR> <新实例路径> --mc-dir <启动器缓存>`。脚本需要对应加载器的启动配置、原版资源及同主版本 JDK。`PROFILES` 记录本次使用的启动器配置名。Windows 副屏坐标由 `launch-fixture.py` 与 `fixture-input.py` 共同校验，移动到其他电脑后要按实际屏幕定位。
 - 同版原版服务端监听回环地址。准备名为 `ComfortQA` 的生存测试玩家，主持测试者在独立的本地服务端开启 RCON，把 `COMFORT_QA_SERVER` 设为对应服务端目录，`COMFORT_QA_INSTANCE` 设为待测客户端目录。端口见 `tools/launch-fixture.py`。RCON 用于准备夹具和读回结果。
-- 执行 `python tools/play-drag-regression.py` 验证拖拽，运行 `python tools/play-fixture.py` 验证核心操作。扩展轮次启动时传入 `--boot-config '{"replaceTools":"STRICT","replaceEquipment":"STRICT","sortKey":"key.keyboard.j"}'`，再执行 `python tools/play-fixture.py --extended`。共存轮次重新启动干净实例，每个上游安装包通过一个 `--with-mod` 参数加入，运行 `python tools/play-fixture.py --coexist`。需要 Python、Pillow，扩展轮次的按钮定位另需 NumPy 和 OpenCV。每轮串行输入，退出该客户端以后再启动下一轮。
+- 执行 `python tools/play-drag-regression.py` 验证单击与拖拽，运行 `python tools/play-fixture.py` 验证核心操作。扩展轮次启动时传入 `--boot-config '{"replaceTools":"STRICT","replaceEquipment":"STRICT","sortKey":"key.keyboard.j"}'`，再执行 `python tools/play-fixture.py --extended`。共存轮次重新启动干净实例，每个上游安装包通过一个 `--with-mod` 参数加入，运行 `python tools/play-fixture.py --coexist`。需要 Python、Pillow，扩展轮次的按钮定位另需 NumPy 和 OpenCV。每轮串行输入，退出该客户端以后再启动下一轮。

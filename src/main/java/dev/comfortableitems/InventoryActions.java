@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 final class InventoryActions {
-    enum Click { PICKUP, SWAP, THROW }
+    enum Click { PICKUP, QUICK_MOVE, SWAP, THROW }
 
     final Minecraft client;
     final AbstractContainerMenu menu;

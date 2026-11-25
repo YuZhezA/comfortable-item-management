@@ -11,6 +11,7 @@ import time
 BAG = ((347, 394), (383, 394))
 HOTBAR = ((347, 510), (383, 510))
 STORAGE = ((347, 261), (383, 261))
+CRAFT_INPUT = ((392, 260), (428, 260))
 CREATIVE_BAG = ((329, 363), (365, 363))
 CREATIVE_HOTBAR = ((329, 479), (365, 479))
 BLOCK_POS = '0 -60 2'
@@ -52,11 +53,16 @@ def drag(ui, start, *positions):
             ui.move(*position)
 
 
+def shift_click(ui, slot):
+    with hold_drag(ui, slot):
+        pass
+
+
 def read_slots(response):
     if response.rstrip() == 'Found no elements matching Items':
         return {}
     slots = {}
-    for stack in re.findall(r'\{[^{}]+\}', response):
+    for stack in re.findall(r'\{(?:[^{}]|\{[^{}]*\})+\}', response):
         slot = re.search(r'Slot: (-?\d+)b?', stack)
         item = re.search(r'id: "minecraft:([a-z_]+)"', stack)
         count = re.search(r'(?:Count|count): (\d+)', stack)
@@ -91,23 +97,36 @@ def open_block(ui, server, block):
     server.send(f'execute positioned {BLOCK_POS} run kill @e[type=minecraft:item,distance=..8]')
     server.send(f'tp {PLAYER} 0.5 -60 0.5 0 31')
     time.sleep(.6)
-    ui.mouse(1)
-    time.sleep(.4)
-    if not inventory_panel(ui):
-        ui.capture(f'failed-open-{block}')
-        raise RuntimeError(f'Failed to open {block}')
+    for _ in range(3):
+        ui.move(ui.r.right // 2, ui.r.bottom // 2)
+        ui.mouse(1)
+        time.sleep(.6)
+        if inventory_panel(ui):
+            return
+    ui.capture(f'failed-open-{block}')
+    raise RuntimeError(f'Failed to open {block}')
 
 
 def run(ui, server):
     results = []
 
-    def check(name, expected, block_expected=None):
+    def check(name, expected, block_expected=None, equipment=None):
         time.sleep(.25)
         inventory = server.send(f'data get entity {PLAYER} Inventory')
         storage = server.send(f'data get block {BLOCK_POS} Items') if block_expected is not None else None
-        ok = read_slots(inventory) == expected and (storage is None or read_slots(storage) == block_expected)
+        slots = read_slots(inventory)
+        player_storage = {slot: stack for slot, stack in slots.items() if 0 <= slot < 36}
+        legacy_slots = {'armor.chest': 102, 'armor.head': 103}
+        equipped = {}
+        for slot, item in (equipment or {}).items():
+            legacy = slots.get(legacy_slots[slot])
+            equipped[slot] = (legacy == (item, 1) if legacy is not None else 'Test passed' in
+                              server.send(f'execute if items entity {PLAYER} {slot} minecraft:{item}'))
+        ok = (player_storage == expected and (storage is None or read_slots(storage) == block_expected)
+              and all(equipped.values()))
         results.append({'scenario': name, 'ok': ok, 'inventory': inventory, 'storage': storage,
-                        'expectedInventory': expected, 'expectedStorage': block_expected})
+                        'expectedInventory': expected, 'expectedStorage': block_expected,
+                        'equipment': equipped, 'expectedEquipment': equipment})
         print(f'{name}: {ok}', flush=True)
         (ui.output / 'drag-regression.json').write_text(json.dumps(results, indent=2), encoding='utf-8')
         ui.capture(name)
@@ -142,7 +161,8 @@ def run(ui, server):
         check('held-inventory-to-hotbar-again', hotbar_stone)
 
     seed(server, stone | full_hotbar)
-    with hold_drag(ui, BAG[0]):
+    with hold_drag(ui, BAG[1]):
+        ui.move(*BAG[0])
         server.send(f'item replace entity {PLAYER} hotbar.0 with minecraft:air')
         time.sleep(.35)
         ui.move(BAG[0][0] + 3, BAG[0][1])
@@ -150,6 +170,40 @@ def run(ui, server):
         ui.move(715, 400)
         ui.move(*BAG[0])
         check('held-return-through-gap-retries-source', hotbar_stone | {i: full_hotbar[i] for i in range(1, 9)})
+    seed(server, {9: ('iron_chestplate', 1), 0: ('iron_helmet', 1), 1: ('golden_chestplate', 1)})
+    shift_click(ui, BAG[0])
+    check('shift-click-bag-equips-chestplate', {0: ('iron_helmet', 1), 1: ('golden_chestplate', 1)},
+          equipment={'armor.chest': 'iron_chestplate'})
+    shift_click(ui, HOTBAR[0])
+    check('shift-click-hotbar-equips-helmet', {1: ('golden_chestplate', 1)},
+          equipment={'armor.chest': 'iron_chestplate', 'armor.head': 'iron_helmet'})
+    shift_click(ui, HOTBAR[1])
+    check('shift-click-keeps-occupied-chest-slot', {9: ('golden_chestplate', 1)},
+          equipment={'armor.chest': 'iron_chestplate', 'armor.head': 'iron_helmet'})
+    press(ui, 0x45)
+
+    seed(server, {0: CONTENTS[9], 9: CONTENTS[10]})
+    open_block(ui, server, 'crafting_table')
+    with hold_drag(ui, HOTBAR[0]):
+        ui.move(HOTBAR[0][0] + 3, HOTBAR[0][1])
+        check('same-slot-held-workbench-is-pending', {0: CONTENTS[9], 9: CONTENTS[10]})
+    check('shift-click-hotbar-fills-workbench', {9: CONTENTS[10]})
+    shift_click(ui, BAG[0])
+    check('shift-click-bag-fills-workbench', {})
+    for cell, destination in zip(CRAFT_INPUT, (HOTBAR[0], BAG[0])):
+        ui.move(*cell)
+        ui.mouse()
+        ui.move(*destination)
+        ui.mouse()
+    check('workbench-inputs-return-with-original-counts', {0: CONTENTS[9], 9: CONTENTS[10]})
+    press(ui, 0x45)
+
+    seed(server, {slot: ('cobblestone', 64) for slot in range(9)} | {9: CONTENTS[9]})
+    open_block(ui, server, 'crafting_table')
+    for slot in range(9):
+        shift_click(ui, (HOTBAR[0][0] + 36 * slot, HOTBAR[0][1]))
+    shift_click(ui, BAG[0])
+    check('shift-click-full-workbench-falls-back-to-hotbar', hotbar_stone)
     press(ui, 0x45)
 
     seed(server, CONTENTS)
@@ -159,6 +213,7 @@ def run(ui, server):
     drag(ui, *HOTBAR)
     check('survival-workbench-to-inventory', CONTENTS)
     with hold_drag(ui, BAG[0]):
+        ui.move(715, 400)
         check('held-workbench-to-hotbar', hotbar_stone | {10: CONTENTS[10]})
         ui.move(*HOTBAR[0])
         check('held-workbench-back-to-inventory', CONTENTS)

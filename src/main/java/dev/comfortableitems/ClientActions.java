@@ -28,6 +28,7 @@ public final class ClientActions {
     private static int dragButton = -1;
     private static AbstractContainerScreen<?> dragScreen;
     private static boolean dragFromHotbar;
+    private static Slot pendingQuickMove;
     private static Slot lastStackDragSlot;
     private static final Set<Integer> visited = new HashSet<>();
 
@@ -151,7 +152,17 @@ public final class ClientActions {
         boolean wasDragging = dragButton == button;
         if (event == ClientPlatform.RELEASE) {
             if (drop) dropHeld = false;
-            if (wasDragging) clearDrag();
+            if (wasDragging) {
+                if (pendingQuickMove != null && Settings.current.enabled && client.isWindowActive()
+                    && ClientPlatform.screen(client) == dragScreen) {
+                    InventoryActions actions = actions(client);
+                    Hover hover = actions == null ? null : hover(client, client.mouseHandler.xpos(), client.mouseHandler.ypos());
+                    if (hover != null && hover.slot == pendingQuickMove && actions.menu.getCarried().isEmpty()) {
+                        actions.click(pendingQuickMove.index, 0, InventoryActions.Click.QUICK_MOVE);
+                    }
+                }
+                clearDrag();
+            }
             return wasDragging;
         }
         InventoryActions actions = actions(client);
@@ -217,8 +228,16 @@ public final class ClientActions {
         }
         holdMouse(operation, button, hover.screen);
         dragFromHotbar = actions.hotbar(hover.slot);
-        if (operation.equals("dragStacks")) dragStackOnEntry(actions, hover.slot);
-        else drag(actions, hover.slot, operation);
+        if (operation.equals("dragStacks")) {
+            if (chord.equals("SHIFT+LEFT") && actions.hasPersonalDragSides() && !actions.creativeInventory()) {
+                // These menus give a vanilla Shift-click different destinations from our drag.
+                pendingQuickMove = hover.slot;
+            } else {
+                dragStackOnEntry(actions, hover.slot);
+            }
+        } else {
+            drag(actions, hover.slot, operation);
+        }
         return true;
     }
 
@@ -233,6 +252,7 @@ public final class ClientActions {
         dragAction = null;
         dragScreen = null;
         dragButton = -1;
+        pendingQuickMove = null;
         lastStackDragSlot = null;
         visited.clear();
     }
@@ -246,9 +266,16 @@ public final class ClientActions {
         if (!dragAction.startsWith("drag")) return;
         InventoryActions actions = actions(client);
         Hover hover = actions == null ? null : hover(client, x, y);
-        if (hover == null || !chord(ClientPlatform.modifiers(client), dropHeld, dragButton == 0 ? "LEFT" : "RIGHT")
+        if (hover == null) return;
+        Slot start = pendingQuickMove;
+        if (start != null) {
+            if (hover.slot == start) return;
+            pendingQuickMove = null;
+        }
+        if (!chord(ClientPlatform.modifiers(client), dropHeld, dragButton == 0 ? "LEFT" : "RIGHT")
             .equalsIgnoreCase(Settings.current.gestures.get(dragAction))) return;
         if (dragAction.equals("dragStacks")) {
+            if (start != null) dragStackOnEntry(actions, start);
             dragStackOnEntry(actions, hover.slot);
             return;
         }
